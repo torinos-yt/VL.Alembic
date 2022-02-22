@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VL.Alembic</name>
+    </assembly>
+    <members>
+        <member name="P:Alembic.AlembicScene.Count">
+            <summary>
+            Number of all Objects in the Archive (e.g. PolyMesh,Xform...)
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>VL.Alembic.xml</DocumentationFile>
+    <NoWarn>1591,5393</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="VL.CoreLib">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\VL.CoreLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Stride.Core.Mathematics">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Stride.Core.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="Stride.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Stride.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Stride">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Stride.dll</HintPath>
+    </Reference>
+    <Reference Include="Stride.Rendering">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Stride.Rendering.dll</HintPath>
+    </Reference>
+    <Reference Include="Stride.Graphics">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Stride.Graphics.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
