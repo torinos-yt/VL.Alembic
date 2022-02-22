@@ -357,7 +357,6 @@ float* PolyMesh::get(int* size)
     size_t nFace = m_faceCounts->size();
     if (nPts < 1 || nInds < 1 || nFace < 1)
     {
-        //o = nullptr;
         *size = 0;
         return nullptr;
     }
@@ -378,7 +377,6 @@ float* PolyMesh::get(int* size)
 
             if (fEnd > nInds || fEnd < fBegin)
             {
-                //o = nullptr;
                 *size = 0;
                 return nullptr;
             }

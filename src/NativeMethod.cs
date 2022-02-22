@@ -73,9 +73,6 @@ namespace Alembic
         [DllImport("VL.Alembic.Native.dll")]
         public static extern void getCameraSample(IntPtr self, out Matrix v, out CameraParam p);
 
-        [DllImport("VL.Alembic.Native.dll")]
-        public static extern void getCameraSampleSRT(IntPtr self, out Vector3 s, out Quaternion r, out Vector3 t);
-
         #endregion // Camera
     }
 }
