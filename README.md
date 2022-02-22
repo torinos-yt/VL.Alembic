@@ -8,5 +8,5 @@ A plugin for read [Alembic](https://www.alembic.io/) Archive File(.abc).
 Install
 -----------------------------------
 ```
-nuget install VL.ALembic -pre
+nuget install VL.Alembic -pre
 ```
