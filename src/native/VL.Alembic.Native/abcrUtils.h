@@ -77,6 +77,14 @@ inline void copyTo(float*& dst, const V3f& v)
     *dst++ = v.z;
 }
 
+inline void copyTo(float*& dst, const C3f& v)
+{
+    *dst++ = v.x;
+    *dst++ = v.y;
+    *dst++ = v.z;
+    *dst++ = 1.0f;
+}
+
 inline void copyTo(float*& dst, const C4f& v)
 {
     *dst++ = v.r;

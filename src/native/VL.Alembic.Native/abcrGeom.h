@@ -240,6 +240,7 @@ private:
     AbcGeom::IPolyMeshSchema::Sample m_mesh_samp;
     AbcGeom::IV2fGeomParam::Sample m_uv_samp;
     AbcGeom::IN3fGeomParam::Sample m_norm_samp;
+
     AbcGeom::IC3fGeomParam::Sample m_rgb_samp;
     AbcGeom::IC4fGeomParam::Sample m_rgba_samp;
 

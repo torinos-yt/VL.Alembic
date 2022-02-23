@@ -410,7 +410,11 @@ float* PolyMesh::get(int* size)
 
         if (hasRGB)
         {
-            const C3f* cols = m_rgb_samp.getVals()->get();
+            const auto cols_ptr = m_rgb_samp.getVals();
+            auto cdCount = cols_ptr->size();
+            bool isIndexedColor = cdCount == m_points->size();
+
+            const C3f* cols = cols_ptr->get();
             for (size_t j = 0; j < m_triangles.size(); ++j)
             {
                 tri& t = m_triangles[j];
@@ -418,33 +422,40 @@ float* PolyMesh::get(int* size)
                 const V3f& v0 = points[indices[t[0]]];
                 const N3f& n0 = norms[t[0]];
                 const V2f& uv0 = uvs[t[0]];
-                const C3f& col0 = cols[t[0]];
-                copyTo(stream, v0);
-                copyTo(stream, n0);
-                copyTo(stream, uv0);
-                copyTo(stream, col0);
+                const C3f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 const V3f& v1 = points[indices[t[1]]];
                 const N3f& n1 = norms[t[1]];
                 const V2f& uv1 = uvs[t[1]];
-                const C3f& col1 = cols[t[1]];
-                copyTo(stream, v1);
-                copyTo(stream, n1);
-                copyTo(stream, uv1);
-                copyTo(stream, col1);
+                const C3f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 const V3f& v2 = points[indices[t[2]]];
                 const N3f& n2 = norms[t[2]];
                 const V2f& uv2 = uvs[t[2]];
-                const C3f& col2 = cols[t[2]];
+                const C3f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
+
+                copyTo(stream, v0);
+                copyTo(stream, n0);
+                copyTo(stream, col0);
+                copyTo(stream, uv0);
+
+                copyTo(stream, v1);
+                copyTo(stream, n1);
+                copyTo(stream, col1);
+                copyTo(stream, uv1);
+
                 copyTo(stream, v2);
                 copyTo(stream, n2);
-                copyTo(stream, uv2);
                 copyTo(stream, col2);
+                copyTo(stream, uv2);
             }
         }
         else if (hasRGBA)
         {
+            const auto cols_ptr = m_rgba_samp.getVals();
+            auto cdCount = cols_ptr->size();
+            bool isIndexedColor = cdCount == m_points->size();
+
             const C4f* cols = m_rgba_samp.getVals()->get();
             for (size_t j = 0; j < m_triangles.size(); ++j)
             {
@@ -453,29 +464,32 @@ float* PolyMesh::get(int* size)
                 const V3f& v0 = points[indices[t[0]]];
                 const N3f& n0 = norms[t[0]];
                 const V2f& uv0 = uvs[t[0]];
-                const C4f& col0 = cols[t[0]];
-                copyTo(stream, v0);
-                copyTo(stream, n0);
-                copyTo(stream, uv0);
-                copyTo(stream, col0);
+                const C4f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 const V3f& v1 = points[indices[t[1]]];
                 const N3f& n1 = norms[t[1]];
                 const V2f& uv1 = uvs[t[1]];
-                const C4f& col1 = cols[t[1]];
-                copyTo(stream, v1);
-                copyTo(stream, n1);
-                copyTo(stream, uv1);
-                copyTo(stream, col1);
+                const C4f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 const V3f& v2 = points[indices[t[2]]];
                 const N3f& n2 = norms[t[2]];
                 const V2f& uv2 = uvs[t[2]];
-                const C4f& col2 = cols[t[2]];
+                const C4f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
+
+                copyTo(stream, v0);
+                copyTo(stream, n0);
+                copyTo(stream, col0);
+                copyTo(stream, uv0);
+
+                copyTo(stream, v1);
+                copyTo(stream, n1);
+                copyTo(stream, col1);
+                copyTo(stream, uv1);
+
                 copyTo(stream, v2);
                 copyTo(stream, n2);
-                copyTo(stream, uv2);
                 copyTo(stream, col2);
+                copyTo(stream, uv2);
             }
         }
         else
@@ -487,20 +501,23 @@ float* PolyMesh::get(int* size)
                 const V3f& v0 = points[indices[t[0]]];
                 const N3f& n0 = norms[t[0]];
                 const V2f& uv0 = uvs[t[0]];
-                copyTo(stream, v0);
-                copyTo(stream, n0);
-                copyTo(stream, uv0);
 
                 const V3f& v1 = points[indices[t[1]]];
                 const N3f& n1 = norms[t[1]];
                 const V2f& uv1 = uvs[t[2]];
-                copyTo(stream, v1);
-                copyTo(stream, n1);
-                copyTo(stream, uv1);
 
                 const V3f& v2 = points[indices[t[2]]];
                 const N3f& n2 = norms[t[2]];
                 const V2f& uv2 = uvs[t[2]];
+
+                copyTo(stream, v0);
+                copyTo(stream, n0);
+                copyTo(stream, uv0);
+
+                copyTo(stream, v1);
+                copyTo(stream, n1);
+                copyTo(stream, uv1);
+
                 copyTo(stream, v2);
                 copyTo(stream, n2);
                 copyTo(stream, uv2);
