@@ -332,8 +332,8 @@ void PolyMesh::set(chrono_t time, Imath::M44f& transform)
     ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
     mesh.get(m_mesh_samp, ss);
-    m_norm_samp = N.getExpandedValue(ss);
-    m_uv_samp = UV.getExpandedValue(ss);
+    if(hasNormal) m_norm_samp = N.getExpandedValue(ss);
+    if(hasUV) m_uv_samp = UV.getExpandedValue(ss);
 
     if (hasRGB) m_rgb_samp = m_rgb.getExpandedValue(ss);
     else if(hasRGBA) m_rgba_samp = m_rgba.getExpandedValue(ss);
@@ -402,8 +402,8 @@ float* PolyMesh::get(int* size)
 
     {
         const V3f* points = m_points->get();
-        const N3f* norms = m_norms->get();
-        const V2f* uvs = m_uvs->get();
+        const N3f* norms = hasNormal ? m_norms->get() : nullptr;
+        const V2f* uvs = hasUV ? m_uvs->get() : nullptr;
         const int32_t* indices = m_indices->get();
 
         float* stream = this->geom;
@@ -420,19 +420,21 @@ float* PolyMesh::get(int* size)
                 tri& t = m_triangles[j];
 
                 const V3f& v0 = points[indices[t[0]]];
-                const N3f& n0 = norms[t[0]];
-                const V2f& uv0 = uvs[t[0]];
+                const V2f& uv0 = hasUV ? uvs[t[0]] : V2f(0);
                 const C3f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 const V3f& v1 = points[indices[t[1]]];
-                const N3f& n1 = norms[t[1]];
-                const V2f& uv1 = uvs[t[1]];
+                const V2f& uv1 = hasUV ? uvs[t[1]] : V2f(0);
                 const C3f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 const V3f& v2 = points[indices[t[2]]];
-                const N3f& n2 = norms[t[2]];
-                const V2f& uv2 = uvs[t[2]];
+                const V2f& uv2 = hasUV ? uvs[t[2]] : V2f(0);
                 const C3f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
+                
+                const N3f& faceNormal = hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                const N3f& n0 = hasNormal ? norms[t[0]] : faceNormal;
+                const N3f& n1 = hasNormal ? norms[t[1]] : faceNormal;
+                const N3f& n2 = hasNormal ? norms[t[2]] : faceNormal;
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -462,19 +464,21 @@ float* PolyMesh::get(int* size)
                 tri& t = m_triangles[j];
 
                 const V3f& v0 = points[indices[t[0]]];
-                const N3f& n0 = norms[t[0]];
-                const V2f& uv0 = uvs[t[0]];
+                const V2f& uv0 = hasUV ? uvs[t[0]] : V2f(0);
                 const C4f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 const V3f& v1 = points[indices[t[1]]];
-                const N3f& n1 = norms[t[1]];
-                const V2f& uv1 = uvs[t[1]];
+                const V2f& uv1 = hasUV ? uvs[t[1]] : V2f(0);
                 const C4f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 const V3f& v2 = points[indices[t[2]]];
-                const N3f& n2 = norms[t[2]];
-                const V2f& uv2 = uvs[t[2]];
+                const V2f& uv2 = hasUV ? uvs[t[2]] : V2f(0);
                 const C4f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
+
+                const N3f& faceNormal = hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                const N3f& n0 = hasNormal ? norms[t[0]] : faceNormal;
+                const N3f& n1 = hasNormal ? norms[t[1]] : faceNormal;
+                const N3f& n2 = hasNormal ? norms[t[2]] : faceNormal;
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -499,16 +503,18 @@ float* PolyMesh::get(int* size)
                 tri& t = m_triangles[j];
 
                 const V3f& v0 = points[indices[t[0]]];
-                const N3f& n0 = norms[t[0]];
-                const V2f& uv0 = uvs[t[0]];
+                const V2f& uv0 = hasUV ? uvs[t[0]] : V2f(0);
 
                 const V3f& v1 = points[indices[t[1]]];
-                const N3f& n1 = norms[t[1]];
-                const V2f& uv1 = uvs[t[2]];
+                const V2f& uv1 = hasUV ? uvs[t[1]] : V2f(0);
 
                 const V3f& v2 = points[indices[t[2]]];
-                const N3f& n2 = norms[t[2]];
-                const V2f& uv2 = uvs[t[2]];
+                const V2f& uv2 = hasUV ? uvs[t[2]] : V2f(0);
+
+                const N3f& faceNormal = hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                const N3f& n0 = hasNormal ? norms[t[0]] : faceNormal;
+                const N3f& n1 = hasNormal ? norms[t[1]] : faceNormal;
+                const N3f& n2 = hasNormal ? norms[t[2]] : faceNormal;
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);

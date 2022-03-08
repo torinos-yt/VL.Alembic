@@ -10,6 +10,11 @@ void copyCharsWithStride(void* target, const string& source, size_t maxLength);
 
 void computeMeshTangent(const V3f& p, const N3f& n, const V2f& uv, float* t);
 
+inline N3f computeFaceNormal(const V3f& v0, const V3f& v1, const V3f& v2)
+{
+    return ((v1 - v0).cross(v2 - v0)).normalize();
+}
+
 inline Vector2 toVVVV(const Alembic::Abc::V2f& v)
 {
     return Vector2(v.x, 1 - v.y);
