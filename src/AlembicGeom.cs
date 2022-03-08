@@ -25,8 +25,8 @@ namespace Alembic
     {
         public AlembicGeom(IntPtr geom) { self = geom; }
 
-        public GeomType Type => NativeMethod.getType(self);
-        public Matrix Transform => NativeMethod.getTransform(self);
+        public GeomType Type => NativeMethods.getType(self);
+        public Matrix Transform => NativeMethods.getTransform(self);
 
         public static explicit operator AlembicGeom(IntPtr ptr) => new AlembicGeom(ptr);
     }
@@ -38,12 +38,12 @@ namespace Alembic
 
         public Vector3[] GetSample()
         {
-            var count = NativeMethod.getPointCount(this.self);
+            var count = NativeMethods.getPointCount(this.self);
 
             var o = new Vector3[count];
             GCHandle handle = GCHandle.Alloc(o, GCHandleType.Pinned);
 
-            NativeMethod.getPointSample(this.self, handle.AddrOfPinnedObject());
+            NativeMethods.getPointSample(this.self, handle.AddrOfPinnedObject());
 
             handle.Free();
 
@@ -77,7 +77,7 @@ namespace Alembic
         {
             get
             {
-                VertexLayout l = NativeMethod.getPolyMeshLayout(this.self);
+                VertexLayout l = NativeMethods.getPolyMeshLayout(this.self);
 
                 switch (l)
                 {
@@ -99,7 +99,7 @@ namespace Alembic
 
         public DataPointer GetSample()
         {
-            var ptr = NativeMethod.getPolyMeshSample(this.self, out var size);
+            var ptr = NativeMethods.getPolyMeshSample(this.self, out var size);
             if(ptr == IntPtr.Zero || size <= 0)
                 throw new InvalidOperationException();
 
@@ -109,9 +109,9 @@ namespace Alembic
         public static explicit operator PolyMesh(AlembicGeom geom) => new PolyMesh(geom);
     }
 
-    public struct CameraParam
+    public readonly struct CameraParam
     {
-        public float Aperture, Near, Far, FocalLength, FoV;
+        public readonly float Aperture, Near, Far, FocalLength, FoV;
     }
 
     internal class Camera : GeomPtr
@@ -121,7 +121,7 @@ namespace Alembic
 
         public (Matrix, CameraParam) GetSample()
         {
-            NativeMethod.getCameraSample(this.self, out var v, out var p);
+            NativeMethods.getCameraSample(this.self, out var v, out var p);
             return (v,p);
         }
 

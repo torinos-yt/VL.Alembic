@@ -10,7 +10,7 @@ namespace Alembic
 
         protected override bool ReleaseHandle()
         {
-            NativeMethod.closeScene(handle);
+            NativeMethods.closeScene(handle);
             return true;
         }
 
@@ -18,7 +18,7 @@ namespace Alembic
         {
             if(path == string.Empty) return null;
 
-            var scene = NativeMethod.openScene(path);
+            var scene = NativeMethods.openScene(path);
             
             if(scene.handle == IntPtr.Zero)
                 throw new FormatException("Failed Open : Illigal Format");
@@ -28,30 +28,30 @@ namespace Alembic
             {
                 unsafe
                 {
-                    scene._nameArray[i] = new string(NativeMethod.getName(scene,i));
+                    scene._nameArray[i] = new string(NativeMethods.getName(scene,i));
                 }
             }
 
             return scene;
         }
 
-        public float MinTime => NativeMethod.getMinTime(this);
-        public float MaxTime => NativeMethod.getMaxTime(this);
+        public float MinTime => NativeMethods.getMinTime(this);
+        public float MaxTime => NativeMethods.getMaxTime(this);
         public Range<float> TimeRange => new Range<float>(MinTime, MaxTime);
 
         /// <summary>
         /// Number of all Objects in the Archive (e.g. PolyMesh,Xform...)
         /// </summary>
-        public int Count => NativeMethod.getGeomCount(this);
+        public int Count => NativeMethods.getGeomCount(this);
 
         string[] _nameArray = new string[0];
         public string[] Names => _nameArray;
 
         public GeomType Type(string name) => GetGeom(name).Type;
 
-        public void SetTime(float time) => NativeMethod.updateTime(this, time);
+        public void SetTime(float time) => NativeMethods.updateTime(this, time);
 
 
-        AlembicGeom GetGeom(string name) => (AlembicGeom)NativeMethod.getGeom(this, name);
+        AlembicGeom GetGeom(string name) => (AlembicGeom)NativeMethods.getGeom(this, name);
     }
 }

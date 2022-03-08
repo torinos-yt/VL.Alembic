@@ -1,10 +1,12 @@
 using System;
+using System.Security;
 using System.Runtime.InteropServices;
 using Stride.Core.Mathematics;
 
 namespace Alembic
 {
-    internal static class NativeMethod
+    [SuppressUnmanagedCodeSecurity]
+    internal static class NativeMethods
     {
         [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 
