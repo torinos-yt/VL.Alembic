@@ -306,6 +306,18 @@ PolyMesh::PolyMesh(AbcGeom::IPolyMesh pmesh)
         this->set(m_minTime, this->transform);
         this->constant = true;
     }
+
+    size_t numSamples = m_polymesh.getSchema().getNumSamples();
+    AbcGeom::IPolyMeshSchema::Sample sample;
+    size_t maxSize = 0;
+    for (index_t i = 0; i < numSamples; ++i)
+    {
+        ISampleSelector ss(i);
+        m_polymesh.getSchema().get(sample, ss);
+        maxSize = std::max<size_t>(maxSize, sample.getPositions()->size());
+    }
+
+    this->resize(maxSize * vertexSize / 4 * 2);
 }
 
 void PolyMesh::resize(size_t size)
