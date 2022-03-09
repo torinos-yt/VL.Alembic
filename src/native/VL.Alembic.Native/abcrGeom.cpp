@@ -1,21 +1,21 @@
 #pragma once
 #include "abcrGeom.h"
 
-abcrGeom::abcrGeom() : type(AlembicType::UNKNOWN), 
-                    m_minTime(std::numeric_limits<float>::infinity()), m_maxTime(0) {}
+abcrGeom::abcrGeom() : _type(AlembicType::UNKNOWN), 
+                    _minTime(std::numeric_limits<float>::infinity()), _maxTime(0) {}
 
 abcrGeom::abcrGeom(IObject obj)
-    : m_obj(obj), type(AlembicType::UNKNOWN), constant(false), 
-    m_minTime(std::numeric_limits<float>::infinity()), m_maxTime(0)
+    : _obj(obj), _type(AlembicType::UNKNOWN), _constant(false), 
+    _minTime(std::numeric_limits<float>::infinity()), _maxTime(0)
 {
-    this->setUpNodeRecursive(m_obj);
+    this->setUpNodeRecursive(_obj);
 }
 
 abcrGeom::~abcrGeom()
 {
-    m_children.clear();
+    _children.clear();
 
-    if (m_obj) m_obj.reset();
+    if (_obj) _obj.reset();
 }
 
 void abcrGeom::setUpNodeRecursive(IObject obj)
@@ -26,59 +26,59 @@ void abcrGeom::setUpNodeRecursive(IObject obj)
     {
         const ObjectHeader& head = obj.getChildHeader(i);
 
-        shared_ptr<abcrGeom> geom;
+        shared_ptr<abcrGeom> _geom;
 
         if (AbcGeom::IXform::matches(head))
         {
             AbcGeom::IXform xform(obj.getChild(i));
-            geom.reset( new XForm(xform));
+            _geom.reset( new XForm(xform));
         }
         else if (AbcGeom::IPoints::matches(head))
         {
             AbcGeom::IPoints points(obj.getChild(i));
-            geom.reset( new Points(points));
+            _geom.reset( new Points(points));
         }
         else if (AbcGeom::ICurves::matches(head))
         {
             AbcGeom::ICurves curves(obj.getChild(i));
-            geom.reset( new Curves(curves));
+            _geom.reset( new Curves(curves));
         }
         else if (AbcGeom::IPolyMesh::matches(head))
         {
             AbcGeom::IPolyMesh pmesh(obj.getChild(i));
-            geom.reset( new PolyMesh(pmesh));
+            _geom.reset( new PolyMesh(pmesh));
         }
         else if (AbcGeom::ICamera::matches(head))
         {
             AbcGeom::ICamera camera(obj.getChild(i));
-            geom.reset( new Camera(camera));
+            _geom.reset( new Camera(camera));
         }
         else
         {
-            geom.reset( new abcrGeom(obj.getChild(i)));
+            _geom.reset( new abcrGeom(obj.getChild(i)));
         }
 
-        if (geom && geom->valid())
+        if (_geom && _geom->valid())
         {
-            geom->index = m_children.size();
-            this->m_children.emplace_back(geom);
-            this->m_minTime = std::min(this->m_minTime, geom->m_minTime);
-            this->m_maxTime = std::max(this->m_maxTime, geom->m_maxTime);
+            _geom->_index = _children.size();
+            this->_children.emplace_back(_geom);
+            this->_minTime = std::min(this->_minTime, _geom->_minTime);
+            this->_maxTime = std::max(this->_maxTime, _geom->_maxTime);
         }
 
     }
 }
 
-void abcrGeom::setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, abcrPtr>& nameMap, map<string, abcrPtr>& fullnameMap)
+void abcrGeom::setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, shared_ptr<abcrGeom>>& nameMap, map<string, shared_ptr<abcrGeom>>& fullnameMap)
 {
     if (!obj->isTypeOf(AlembicType::UNKNOWN))
     {
-        nameMap[obj->getName()] = abcrPtr(obj.get());
-        fullnameMap[obj->getFullName()] = abcrPtr(obj.get());
+        nameMap[obj->getName()] = obj;
+        fullnameMap[obj->getFullName()] = obj;
     }
 
-    for (size_t i = 0; i < obj->m_children.size(); i++)
-        setUpDocRecursive(obj->m_children[i], nameMap, fullnameMap);
+    for (size_t i = 0; i < obj->_children.size(); i++)
+        setUpDocRecursive(obj->_children[i], nameMap, fullnameMap);
 }
 
 
@@ -90,104 +90,104 @@ void abcrGeom::setMinMaxTime(T& obj)
 
     if (nSamples > 0)
     {
-        m_minTime = tptr->getSampleTime(0);
-        m_maxTime = tptr->getSampleTime(nSamples - 1);
+        _minTime = tptr->getSampleTime(0);
+        _maxTime = tptr->getSampleTime(nSamples - 1);
     }   
 }
 
 void abcrGeom::updateTimeSample(chrono_t time, Imath::M44f& transform)
 {
     set(time, transform);
-    this->transform = transform;
+    _transform = transform;
 
-    for (size_t i = 0; i < m_children.size(); ++i)
+    for (size_t i = 0; i < _children.size(); ++i)
     {
         Imath::M44f m = transform;
-        m_children[i]->updateTimeSample(time, m);
+        _children[i]->updateTimeSample(time, m);
     }
 }
 
 XForm::XForm(AbcGeom::IXform xform)
-    : abcrGeom(xform), m_xform(xform)
+    : abcrGeom(xform), _xform(xform)
 {
-    type = AlembicType::XFORM;
-    setMinMaxTime(m_xform);
+    _type = AlembicType::XFORM;
+    setMinMaxTime(_xform);
 
-    m_samplingPtr = m_xform.getSchema().getTimeSampling();
+    _samplingPtr = _xform.getSchema().getTimeSampling();
 
-    if (m_xform.getSchema().isConstant())
+    if (_xform.getSchema().isConstant())
     {
-        this->set(m_minTime, this->transform);
-        this->constant = true;
+        this->set(_minTime, _transform);
+        _constant = true;
     }
 }
 
 void XForm::set(chrono_t time, Imath::M44f& transform)
 {
-    if (!this->constant)
+    if (!_constant)
     {
         ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
-        const Imath::M44d& m = m_xform.getSchema().getValue(ss).getMatrix();
+        const Imath::M44d& m = _xform.getSchema().getValue(ss).getMatrix();
         const double* src = m.getValue();
-        float* dst = this->mat.getValue();
+        float* dst = _matrix.getValue();
 
         for (size_t i = 0; i < 16; ++i) dst[i] = src[i];
     }
 
-    transform = this->mat * transform;
+    transform = _matrix * transform;
 }
 
 Points::Points(AbcGeom::IPoints points)
-    : abcrGeom(points), m_points(points)
+    : abcrGeom(points), _points(points)
 {
-    type = AlembicType::POINTS;
-    setMinMaxTime(m_points);
+    _type = AlembicType::POINTS;
+    setMinMaxTime(_points);
 
-    m_samplingPtr = m_points.getSchema().getTimeSampling();
+    _samplingPtr = _points.getSchema().getTimeSampling();
 
-    if (m_points.getSchema().isConstant())
+    if (_points.getSchema().isConstant())
     {
-        this->set(this->m_minTime, this->transform);
-        this->constant = true;
+        this->set(_minTime, _transform);
+        _constant = true;
     }
 }
 
 void Points::set(chrono_t time, Imath::M44f& transform)
 {
-    if (this->constant) return;
+    if (_constant) return;
 
-    AbcGeom::IPointsSchema ptSchema = m_points.getSchema();
+    AbcGeom::IPointsSchema ptSchema = _points.getSchema();
     AbcGeom::IPointsSchema::Sample pts_sample;
 
     ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
     ptSchema.get(pts_sample, ss);
 
-    m_positions = pts_sample.getPositions();
-    m_count = m_positions->size();
+    _positions = pts_sample.getPositions();
+    _pointCount = _positions->size();
 }
 
 bool Points::get(float* o)
 {
-    const V3f* src = m_positions->get();
+    const V3f* src = _positions->get();
 
     memcpy(o, src, this->getPointCount() * sizeof(V3f));
     return true;
 }
 
 Curves::Curves(AbcGeom::ICurves curves)
-    : abcrGeom(curves), m_curves(curves)
+    : abcrGeom(curves), _curves(curves)
 {
-    type = AlembicType::CURVES;
-    setMinMaxTime(m_curves);
+    _type = AlembicType::CURVES;
+    setMinMaxTime(curves);
 
-    m_samplingPtr = m_curves.getSchema().getTimeSampling();
+    _samplingPtr = curves.getSchema().getTimeSampling();
 
-    if (m_curves.getSchema().isConstant())
+    if (curves.getSchema().isConstant())
     {
-        this->set(m_minTime, this->transform);
-        this->constant = true;
+        this->set(_minTime, _transform);
+        _constant = true;
     }
 }
 
@@ -249,31 +249,31 @@ void Curves::set(chrono_t time, Imath::M44f& transform)
 }
 
 PolyMesh::PolyMesh(AbcGeom::IPolyMesh pmesh)
-    : abcrGeom(pmesh), m_polymesh(pmesh), hasRGB(false), hasRGBA(false), hasNormal(true), hasUV(true),
-    m_capacity(0), m_vertexCount(0), vertexSize(0)
+    : abcrGeom(pmesh), _polymesh(pmesh), _hasRGB(false), _hasRGBA(false), _hasNormal(true), _hasUV(true),
+    _capacity(0), _vertexCount(0), _vertexSize(0)
 {
-    type = AlembicType::POLYMESH;
-    setMinMaxTime(m_polymesh);
+    _type = AlembicType::POLYMESH;
+    setMinMaxTime(_polymesh);
 
-    m_samplingPtr = m_polymesh.getSchema().getTimeSampling();
+    _samplingPtr = _polymesh.getSchema().getTimeSampling();
 
-    AbcGeom::IPolyMeshSchema mesh = m_polymesh.getSchema();
-    auto geomParam = m_polymesh.getSchema().getArbGeomParams();
+    AbcGeom::IPolyMeshSchema mesh = _polymesh.getSchema();
+    auto geomParam = _polymesh.getSchema().getArbGeomParams();
 
     { // normal valid
         AbcGeom::IN3fGeomParam N = mesh.getNormalsParam();
         if (!N.valid() || N.getNumSamples() <= 0 || N.getScope() == AbcGeom::kUnknownScope)
-            this->hasNormal = false;
+            _hasNormal = false;
     }
 
     { // uvs valid
         AbcGeom::IV2fGeomParam UV = mesh.getUVsParam();
         if (!UV.valid() || UV.getNumSamples() <= 0 || UV.getScope() == AbcGeom::kUnknownScope)
-            this->hasUV = false;
+            _hasUV = false;
     }
 
-    this->vertexSize = VertexPositionNormalTexture::VertexSize();
-    this->layout = VertexLayout::PosNormTex;
+    _vertexSize = VertexPositionNormalTexture::VertexSize();
+    _layout = VertexLayout::PosNormTex;
 
     if (geomParam.valid())
     {
@@ -284,85 +284,85 @@ PolyMesh::PolyMesh(AbcGeom::IPolyMesh pmesh)
 
             if (AbcGeom::IC3fGeomParam::matches(head))
             {
-                hasRGB = true;
-                vertexSize = VertexPositionNormalColorTexture::VertexSize();
-                this->layout = VertexLayout::PosNormColTex;
-                m_rgb = AbcGeom::IC3fGeomParam(geomParam, head.getName());
+                _hasRGB = true;
+                _vertexSize = VertexPositionNormalColorTexture::VertexSize();
+                _layout = VertexLayout::PosNormColTex;
+                _rgbParam = AbcGeom::IC3fGeomParam(geomParam, head.getName());
             }
             else if (AbcGeom::IC4fGeomParam::matches(head))
             {
-                hasRGBA = true;
-                vertexSize = VertexPositionNormalColorTexture::VertexSize();
-                this->layout = VertexLayout::PosNormColTex;
-                m_rgba = AbcGeom::IC4fGeomParam(geomParam, head.getName());
+                _hasRGBA = true;
+                _vertexSize = VertexPositionNormalColorTexture::VertexSize();
+                _layout = VertexLayout::PosNormColTex;
+                _rgbaParam = AbcGeom::IC4fGeomParam(geomParam, head.getName());
             }
         }
     }
 
-    if (m_polymesh.getSchema().isConstant() &&
-        ((hasRGB && m_rgb.isConstant()) ||
-            (hasRGBA && m_rgba.isConstant())))
+    if (_polymesh.getSchema().isConstant() &&
+        ((_hasRGB && _rgbParam.isConstant()) ||
+            (_hasRGBA && _rgbaParam.isConstant())))
     {
-        this->set(m_minTime, this->transform);
-        this->constant = true;
+        this->set(_minTime, _transform);
+        _constant = true;
     }
 
-    size_t numSamples = m_polymesh.getSchema().getNumSamples();
+    size_t numSamples = _polymesh.getSchema().getNumSamples();
     AbcGeom::IPolyMeshSchema::Sample sample;
     size_t maxSize = 0;
     for (index_t i = 0; i < numSamples; ++i)
     {
         ISampleSelector ss(i);
-        m_polymesh.getSchema().get(sample, ss);
+        _polymesh.getSchema().get(sample, ss);
         maxSize = std::max<size_t>(maxSize, sample.getPositions()->size());
     }
 
-    this->resize(maxSize * vertexSize / 4 * 2);
+    this->resize(maxSize * _vertexSize / 4 * 2);
 }
 
 void PolyMesh::resize(size_t size)
 {
-    if (size > m_capacity)
+    if (size > _capacity)
     {
-        size = std::max<size_t>(size, (size_t)m_vertexCount * (vertexSize/4) * 2);
+        size = std::max<size_t>(size, (size_t)_vertexCount * (_vertexSize/4) * 2);
 
-        if(this->geom != nullptr) delete[] this->geom;
+        if(_geom != nullptr) delete[] _geom;
 
-        this->geom = new float[size];
-        m_capacity = size;
+        _geom = new float[size];
+        _capacity = size;
     }
 }
 
 void PolyMesh::set(chrono_t time, Imath::M44f& transform)
 {
-    if (this->constant) return;
+    if (_constant) return;
 
-    AbcGeom::IPolyMeshSchema mesh = m_polymesh.getSchema();
+    AbcGeom::IPolyMeshSchema mesh = _polymesh.getSchema();
     AbcGeom::IN3fGeomParam N = mesh.getNormalsParam();
     AbcGeom::IV2fGeomParam UV = mesh.getUVsParam();
 
     ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
-    mesh.get(m_mesh_samp, ss);
-    if(hasNormal) m_norm_samp = N.getExpandedValue(ss);
-    if(hasUV) m_uv_samp = UV.getExpandedValue(ss);
+    mesh.get(_meshSample, ss);
+    if(_hasNormal) _normSample = N.getExpandedValue(ss);
+    if(_hasUV) _uvSample = UV.getExpandedValue(ss);
 
-    if (hasRGB) m_rgb_samp = m_rgb.getExpandedValue(ss);
-    else if(hasRGBA) m_rgba_samp = m_rgba.getExpandedValue(ss);
+    if (_hasRGB) _rgbSample = _rgbParam.getExpandedValue(ss);
+    else if(_hasRGBA) _rgbaSample = _rgbaParam.getExpandedValue(ss);
 }
 
 float* PolyMesh::get(int* size)
 {
     //sample some property
-    P3fArraySamplePtr m_points = m_mesh_samp.getPositions();
-    Int32ArraySamplePtr m_indices = m_mesh_samp.getFaceIndices();
-    Int32ArraySamplePtr m_faceCounts = m_mesh_samp.getFaceCounts();
+    P3fArraySamplePtr m_points = _meshSample.getPositions();
+    Int32ArraySamplePtr m_indices = _meshSample.getFaceIndices();
+    Int32ArraySamplePtr m_faceCounts = _meshSample.getFaceCounts();
 
     N3fArraySamplePtr m_norms;
-    if(hasNormal) m_norms = m_norm_samp.getVals();
+    if(_hasNormal) m_norms = _normSample.getVals();
 
     V2fArraySamplePtr m_uvs;
-    if(hasUV) m_uvs = m_uv_samp.getVals();
+    if(_hasUV) m_uvs = _uvSample.getVals();
 
     size_t nPts = m_points->size();
     size_t nInds = m_indices->size();
@@ -408,21 +408,21 @@ float* PolyMesh::get(int* size)
         }
     }
 
-    size_t sizeInBytes = m_triangles.size() * 3 * vertexSize;
+    size_t sizeInBytes = m_triangles.size() * 3 * _vertexSize;
     this->resize(sizeInBytes / 4);
-    m_vertexCount = m_triangles.size() * 3;
+    _vertexCount = m_triangles.size() * 3;
 
     {
         const V3f* points = m_points->get();
-        const N3f* norms = hasNormal ? m_norms->get() : nullptr;
-        const V2f* uvs = hasUV ? m_uvs->get() : nullptr;
+        const N3f* norms = _hasNormal ? m_norms->get() : nullptr;
+        const V2f* uvs = _hasUV ? m_uvs->get() : nullptr;
         const int32_t* indices = m_indices->get();
 
-        float* stream = this->geom;
+        float* stream = _geom;
 
-        if (hasRGB)
+        if (_hasRGB)
         {
-            const auto cols_ptr = m_rgb_samp.getVals();
+            const auto cols_ptr = _rgbSample.getVals();
             auto cdCount = cols_ptr->size();
             bool isIndexedColor = cdCount == m_points->size();
 
@@ -432,21 +432,21 @@ float* PolyMesh::get(int* size)
                 tri& t = m_triangles[j];
 
                 const V3f& v0 = points[indices[t[0]]];
-                const V2f& uv0 = hasUV ? uvs[t[0]] : V2f(0);
+                const V2f& uv0 = _hasUV ? uvs[t[0]] : V2f(0);
                 const C3f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 const V3f& v1 = points[indices[t[1]]];
-                const V2f& uv1 = hasUV ? uvs[t[1]] : V2f(0);
+                const V2f& uv1 = _hasUV ? uvs[t[1]] : V2f(0);
                 const C3f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 const V3f& v2 = points[indices[t[2]]];
-                const V2f& uv2 = hasUV ? uvs[t[2]] : V2f(0);
+                const V2f& uv2 = _hasUV ? uvs[t[2]] : V2f(0);
                 const C3f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
                 
-                const N3f& faceNormal = hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                const N3f& n0 = hasNormal ? norms[t[0]] : faceNormal;
-                const N3f& n1 = hasNormal ? norms[t[1]] : faceNormal;
-                const N3f& n2 = hasNormal ? norms[t[2]] : faceNormal;
+                const N3f& faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                const N3f& n0 = _hasNormal ? norms[t[0]] : faceNormal;
+                const N3f& n1 = _hasNormal ? norms[t[1]] : faceNormal;
+                const N3f& n2 = _hasNormal ? norms[t[2]] : faceNormal;
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -464,33 +464,33 @@ float* PolyMesh::get(int* size)
                 copyTo(stream, uv2);
             }
         }
-        else if (hasRGBA)
+        else if (_hasRGBA)
         {
-            const auto cols_ptr = m_rgba_samp.getVals();
+            const auto cols_ptr = _rgbaSample.getVals();
             auto cdCount = cols_ptr->size();
             bool isIndexedColor = cdCount == m_points->size();
 
-            const C4f* cols = m_rgba_samp.getVals()->get();
+            const C4f* cols = _rgbaSample.getVals()->get();
             for (size_t j = 0; j < m_triangles.size(); ++j)
             {
                 tri& t = m_triangles[j];
 
                 const V3f& v0 = points[indices[t[0]]];
-                const V2f& uv0 = hasUV ? uvs[t[0]] : V2f(0);
+                const V2f& uv0 = _hasUV ? uvs[t[0]] : V2f(0);
                 const C4f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 const V3f& v1 = points[indices[t[1]]];
-                const V2f& uv1 = hasUV ? uvs[t[1]] : V2f(0);
+                const V2f& uv1 = _hasUV ? uvs[t[1]] : V2f(0);
                 const C4f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 const V3f& v2 = points[indices[t[2]]];
-                const V2f& uv2 = hasUV ? uvs[t[2]] : V2f(0);
+                const V2f& uv2 = _hasUV ? uvs[t[2]] : V2f(0);
                 const C4f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
 
-                const N3f& faceNormal = hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                const N3f& n0 = hasNormal ? norms[t[0]] : faceNormal;
-                const N3f& n1 = hasNormal ? norms[t[1]] : faceNormal;
-                const N3f& n2 = hasNormal ? norms[t[2]] : faceNormal;
+                const N3f& faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                const N3f& n0 = _hasNormal ? norms[t[0]] : faceNormal;
+                const N3f& n1 = _hasNormal ? norms[t[1]] : faceNormal;
+                const N3f& n2 = _hasNormal ? norms[t[2]] : faceNormal;
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -515,18 +515,18 @@ float* PolyMesh::get(int* size)
                 tri& t = m_triangles[j];
 
                 const V3f& v0 = points[indices[t[0]]];
-                const V2f& uv0 = hasUV ? uvs[t[0]] : V2f(0);
+                const V2f& uv0 = _hasUV ? uvs[t[0]] : V2f(0);
 
                 const V3f& v1 = points[indices[t[1]]];
-                const V2f& uv1 = hasUV ? uvs[t[1]] : V2f(0);
+                const V2f& uv1 = _hasUV ? uvs[t[1]] : V2f(0);
 
                 const V3f& v2 = points[indices[t[2]]];
-                const V2f& uv2 = hasUV ? uvs[t[2]] : V2f(0);
+                const V2f& uv2 = _hasUV ? uvs[t[2]] : V2f(0);
 
-                const N3f& faceNormal = hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                const N3f& n0 = hasNormal ? norms[t[0]] : faceNormal;
-                const N3f& n1 = hasNormal ? norms[t[1]] : faceNormal;
-                const N3f& n2 = hasNormal ? norms[t[2]] : faceNormal;
+                const N3f& faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                const N3f& n0 = _hasNormal ? norms[t[0]] : faceNormal;
+                const N3f& n1 = _hasNormal ? norms[t[1]] : faceNormal;
+                const N3f& n2 = _hasNormal ? norms[t[2]] : faceNormal;
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -544,30 +544,30 @@ float* PolyMesh::get(int* size)
     }
 
     *size = sizeInBytes;
-    return this->geom;
+    return _geom;
 }
 
 Camera::Camera(AbcGeom::ICamera camera)
-    : abcrGeom(camera), m_camera(camera), View(), Proj()
+    : abcrGeom(camera), _camera(camera), _view(), _proj()
 {
-    type = AlembicType::CAMERA;
-    setMinMaxTime(m_camera);
+    _type = AlembicType::CAMERA;
+    setMinMaxTime(_camera);
 
     if (camera.getSchema().isConstant())
     {
-        this->set(m_minTime, this->transform);
-        this->constant = true;
+        this->set(_minTime, _transform);
+        _constant = true;
     }
 }
 
 void Camera::set(chrono_t time, Imath::M44f& transform)
 {
-    if (!this->constant)
+    if (!_constant)
     {
         ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
         AbcGeom::CameraSample cam_samp;
-        AbcGeom::ICameraSchema camSchema = m_camera.getSchema();
+        AbcGeom::ICameraSchema camSchema = _camera.getSchema();
 
         camSchema.get(cam_samp);
 
@@ -577,8 +577,8 @@ void Camera::set(chrono_t time, Imath::M44f& transform)
         float ForcalLength = cam_samp.getFocalLength();
         float FoV = 2.0 * (atan(Aperture * 10.0 / (2.0 * ForcalLength))) * (180.0f / M_PI);
 
-        this->Proj = CameraParam(Aperture, Near, Far, ForcalLength, FoV * (1.0f / 360));
+        _proj = CameraParam(Aperture, Near, Far, ForcalLength, FoV * (1.0f / 360));
     }
 
-    this->View = toVVVV(transform.invert());
+    _view = toVVVV(transform.invert());
 }

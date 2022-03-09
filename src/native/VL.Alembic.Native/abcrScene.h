@@ -20,25 +20,25 @@ class abcrScene
 
         bool updateSample(chrono_t time);
 
-        bool valid() const { return m_top->valid(); };
+        bool valid() const { return _top->valid(); };
 
-        inline float getMaxTime() const { return m_maxTime; };
-        inline float getMinTime() const { return m_minTime; };
-        inline size_t getGeomCount() const { return nameMap.size(); };
+        inline float getMaxTime() const { return _maxTime; };
+        inline float getMinTime() const { return _minTime; };
+        inline size_t getGeomCount() const { return _nameMap.size(); };
 
-        inline map<string, abcrPtr>::const_iterator getGeomIterator() const
+        inline map<string, shared_ptr<abcrGeom>>::const_iterator getGeomIterator() const
         {
-            return nameMap.cbegin();
+            return _nameMap.cbegin();
         }
 
         inline abcrGeom* getGeom(const string& name) const
         {
-            return fullnameMap.at(name).m_ptr;
+            return _fullnameMap.at(name).get();
         }
 
         const char* getFullName(size_t index) const
         {
-            auto ite = fullnameMap.cbegin();
+            auto ite = _fullnameMap.cbegin();
             for (size_t i = 0; i < index; i++) ite++;
 
             char* result = new char[255];
@@ -55,12 +55,12 @@ class abcrScene
 
     private:
 
-        IArchive m_archive;
-        shared_ptr<abcrGeom> m_top;
+        IArchive _archive;
+        shared_ptr<abcrGeom> _top;
 
-        chrono_t m_minTime;
-        chrono_t m_maxTime;
+        chrono_t _minTime;
+        chrono_t _maxTime;
 
-        map<string, abcrPtr> nameMap;
-        map<string, abcrPtr> fullnameMap;
+        map<string, shared_ptr<abcrGeom>> _nameMap;
+        map<string, shared_ptr<abcrGeom>> _fullnameMap;
 };

@@ -4,41 +4,41 @@ abcrScene::abcrScene() {}
 
 abcrScene::~abcrScene() 
 {
-    this->nameMap.clear();
-    this->fullnameMap.clear();
+    this->_nameMap.clear();
+    this->_fullnameMap.clear();
 
-    if (m_top) m_top.reset();
-    if (m_archive.valid()) m_archive.reset();
+    if (_top) _top.reset();
+    if (_archive.valid()) _archive.reset();
 }
 
 bool abcrScene::open(const string& path)
 {
-    m_archive = IArchive(AbcCoreOgawa::ReadArchive(), path,
+    _archive = IArchive(AbcCoreOgawa::ReadArchive(), path,
         Alembic::Abc::ErrorHandler::kQuietNoopPolicy);
 
-    if (!m_archive.valid()) return false;
+    if (!_archive.valid()) return false;
 
-    m_top.reset( new abcrGeom(m_archive.getTop()) );
+    _top.reset( new abcrGeom(_archive.getTop()) );
         
-    this->nameMap.clear();
-    this->fullnameMap.clear();
-    abcrGeom::setUpDocRecursive(m_top, nameMap, fullnameMap);
+    this->_nameMap.clear();
+    this->_fullnameMap.clear();
+    abcrGeom::setUpDocRecursive(_top, _nameMap, _fullnameMap);
         
-    m_minTime = m_top->m_minTime;
-    m_maxTime = m_top->m_maxTime;
+    _minTime = _top->_minTime;
+    _maxTime = _top->_maxTime;
 
     return true;
 }
 
 bool abcrScene::updateSample(chrono_t time)
 {
-    if (!m_top) return false;
+    if (!_top) return false;
 
     ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
     Imath::M44f m;
     m.makeIdentity();
-    m_top->updateTimeSample(time, m);
+    _top->updateTimeSample(time, m);
 
     return true;
 }

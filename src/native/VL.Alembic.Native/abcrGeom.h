@@ -67,45 +67,45 @@ public:
     abcrGeom(IObject obj);
     virtual ~abcrGeom();
 
-    virtual bool valid() const { return m_obj; };
+    virtual bool valid() const { return _obj; };
 
-    size_t getIndex() const { return index; };
+    size_t getIndex() const { return _index; };
 
-    string getName() const { return m_obj.getName(); };
+    string getName() const { return _obj.getName(); };
 
-    string getFullName() const { return m_obj.getFullName(); };
+    string getFullName() const { return _obj.getFullName(); };
 
-    IObject getIObject() const { return m_obj; };
+    IObject getIObject() const { return _obj; };
 
-    Matrix4x4 getTransform() const { return toVVVV(transform); };
+    Matrix4x4 getTransform() const { return toVVVV(_transform); };
 
     virtual const char* getTypeName() const { return ""; };
 
-    AlembicType::Type getType() const { return type; };
+    AlembicType::Type getType() const { return _type; };
 
-    inline bool isTypeOf(AlembicType::Type t) const { return type == t; };
+    inline bool isTypeOf(AlembicType::Type t) const { return _type == t; };
 
     template<typename T>
-    inline bool isTypeOf() const { return type == type2enum<T>(); };
+    inline bool isTypeOf() const { return _type == type2enum<T>(); };
 
     void setUpNodeRecursive(IObject obj);
-    static void setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, abcrPtr>& nameMap, map<string, abcrPtr>& fullnameMap);
+    static void setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, shared_ptr<abcrGeom>>& nameMap, map<string, shared_ptr<abcrGeom>>& fullnameMap);
 
 protected:
 
-    AlembicType::Type type;
+    AlembicType::Type _type;
 
-    size_t index;
+    size_t _index;
 
-    chrono_t m_minTime;
-    chrono_t m_maxTime;
+    chrono_t _minTime;
+    chrono_t _maxTime;
 
-    Imath::M44f transform;
+    Imath::M44f _transform;
 
-    bool constant;
+    bool _constant;
 
-    IObject m_obj;
-    vector<shared_ptr<abcrGeom>> m_children;
+    IObject _obj;
+    vector<shared_ptr<abcrGeom>> _children;
 
     virtual void updateTimeSample(chrono_t time, Imath::M44f& transform);
     virtual void set(chrono_t time, Imath::M44f& transform) {};
@@ -113,22 +113,22 @@ protected:
     template<typename T>
     void setMinMaxTime(T& obj);
 
-    bool isUpdate = true;
-    index_t lastSampleIndex = 0;
+    bool _isUpdate = true;
+    index_t _lastSampleIndex = 0;
 
-    TimeSamplingPtr m_samplingPtr;
+    TimeSamplingPtr _samplingPtr;
 };
 
 class XForm : public abcrGeom
 {
 public:
 
-    Imath::M44f mat;
+    Imath::M44f _matrix;
 
     XForm(AbcGeom::IXform xform);
     ~XForm()
     {
-        if (m_xform) m_xform.reset();
+        if (_xform) _xform.reset();
     }
 
     const char* getTypeNmae() const { return "XForm"; }
@@ -137,7 +137,7 @@ public:
 
 private:
 
-    AbcGeom::IXform m_xform;
+    AbcGeom::IXform _xform;
 
 };
 
@@ -148,77 +148,77 @@ public:
     Points(AbcGeom::IPoints points);
     ~Points() 
     {
-        if (m_points) m_points.reset();
+        if (_points) _points.reset();
     }
 
     const char* getTypeNmae() const { return "Points"; }
-    int getPointCount() const { return m_count; }
+    int getPointCount() const { return _pointCount; }
     void set(chrono_t time, Imath::M44f& transform) override;
 
     bool get(float* o);
 
 private:
 
-    AbcGeom::IPoints m_points;
+    AbcGeom::IPoints _points;
 
-    P3fArraySamplePtr m_positions;
-    int m_count;
+    P3fArraySamplePtr _positions;
+    int _pointCount;
 };
 
 class Curves : public abcrGeom
 {
 public:
 
-    int* index = nullptr;
-    float* curves = nullptr;
+    int* _index = nullptr;
+    float* _points = nullptr;
 
-    Curves(AbcGeom::ICurves curves);
+    Curves(AbcGeom::ICurves _curves);
     ~Curves()
     {
-        if (m_curves) m_curves.reset();
-        if(this->index)  delete this->index;
-        if(this->curves) delete this->curves;
+        if (_curves) _curves.reset();
+        if(this->_index)  delete this->_index;
+        if(this->_points) delete this->_points;
     }
 
     const char* getTypeNmae() const { return "Curves"; }
-    int getCurveCount() const { return m_count; }
+    int getCurveCount() const { return _pointCount; }
     inline void getIndexSpread(int* o) const 
     {
-        memcpy(o, this->index, m_indexCount);
+        memcpy(o, this->_index, _indexCount);
     }
 
     void set(chrono_t time, Imath::M44f& transform) override;
 
     inline bool get(float* o)
     {
-        memcpy(o, this->curves, this->getCurveCount() * sizeof(V3f));
+        memcpy(o, this->_points, this->getCurveCount() * sizeof(V3f));
         return true;
     }
 
 private:
 
-    AbcGeom::ICurves m_curves;
-    int m_count;
-    int m_indexCount;
+    AbcGeom::ICurves _curves;
+    int _pointCount;
+    int _indexCount;
 };
 
 class PolyMesh : public abcrGeom
 {
 public:
 
-    float* geom = nullptr;
+    float* _geom = nullptr;
 
     PolyMesh(AbcGeom::IPolyMesh pmesh);
     ~PolyMesh()
     {
-        if (m_polymesh) m_polymesh.reset();
-        if(this->geom) delete this->geom;
+        if (_polymesh) _polymesh.reset();
+        if(this->_geom) delete this->_geom;
     }
 
     const char* getTypeNmae() const { return "PolyMesh"; }
-    int getVertexCount() const { return m_vertexCount; }
-    size_t getVertexSize() const { return vertexSize; }
-    VertexLayout getVertexLayout() const { return layout; }
+    int getVertexCount() const { return _vertexCount; }
+    size_t getVertexSize() const { return _vertexSize; }
+    VertexLayout getVertexLayout() const { return _layout; }
     void set(chrono_t time, Imath::M44f& transform) override;
 
     void resize(size_t size);
@@ -228,39 +228,39 @@ public:
 
 private:
 
-    bool hasNormal;
-    bool hasUV;
-    bool hasRGB;
-    bool hasRGBA;
+    bool _hasNormal;
+    bool _hasUV;
+    bool _hasRGB;
+    bool _hasRGBA;
 
-    AbcGeom::IPolyMesh m_polymesh;
-    AbcGeom::IC3fGeomParam m_rgb;
-    AbcGeom::IC4fGeomParam m_rgba;
+    AbcGeom::IPolyMesh _polymesh;
+    AbcGeom::IC3fGeomParam _rgbParam;
+    AbcGeom::IC4fGeomParam _rgbaParam;
 
-    AbcGeom::IPolyMeshSchema::Sample m_mesh_samp;
-    AbcGeom::IV2fGeomParam::Sample m_uv_samp;
-    AbcGeom::IN3fGeomParam::Sample m_norm_samp;
+    AbcGeom::IPolyMeshSchema::Sample _meshSample;
+    AbcGeom::IV2fGeomParam::Sample _uvSample;
+    AbcGeom::IN3fGeomParam::Sample _normSample;
 
-    AbcGeom::IC3fGeomParam::Sample m_rgb_samp;
-    AbcGeom::IC4fGeomParam::Sample m_rgba_samp;
+    AbcGeom::IC3fGeomParam::Sample _rgbSample;
+    AbcGeom::IC4fGeomParam::Sample _rgbaSample;
 
-    VertexLayout layout;
+    VertexLayout _layout;
         
-    size_t vertexSize;
-    int m_vertexCount;
-    int m_capacity;
+    size_t _vertexSize;
+    int _vertexCount;
+    int _capacity;
 };
 
 class Camera : public abcrGeom
 {
 public:
-    Matrix4x4 View;
-    CameraParam Proj;
+    Matrix4x4 _view;
+    CameraParam _proj;
 
     Camera(AbcGeom::ICamera camera);
     ~Camera()
     {
-        if (m_camera) m_camera.reset();
+        if (_camera) _camera.reset();
     }
 
     const char* getTypeNmae() const { return "Camera"; }
@@ -269,21 +269,13 @@ public:
 
     inline bool get(Matrix4x4* ov, CameraParam* op)
     {
-        *ov = this->View;
-        *op = this->Proj;
+        *ov = this->_view;
+        *op = this->_proj;
         return true;
     }
 
 private:
 
-    AbcGeom::ICamera m_camera;
+    AbcGeom::ICamera _camera;
 
-};
-
-struct abcrPtr
-{
-    abcrGeom* m_ptr;
-
-    abcrPtr() { m_ptr = nullptr; }
-    abcrPtr(abcrGeom* ptr) : m_ptr(ptr) {}
 };
