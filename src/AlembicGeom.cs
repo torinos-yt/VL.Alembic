@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using Stride.Core.Mathematics;
 using Stride.Graphics;
 
@@ -36,19 +35,13 @@ namespace Alembic
         public Points(IntPtr ptr) { self = ptr; }
         public Points(AlembicGeom geom) { self = geom.Self; }
 
-        public Vector3[] GetSample()
+        public void GetSample(ref PinnedSequence<Vector3> array)
         {
-            var count = NativeMethods.getPointCount(this.self);
-
-            var o = new Vector3[count];
-            GCHandle handle = GCHandle.Alloc(o, GCHandleType.Pinned);
-
-            NativeMethods.getPointSample(this.self, handle.AddrOfPinnedObject());
-
-            handle.Free();
-
-            return o;
+            array.Resize(this.Count);
+            NativeMethods.getPointSample(this.self, array.Ptr);
         }
+
+        public int Count => NativeMethods.getPointCount(this.self);
 
         public static explicit operator Points(AlembicGeom geom) => new Points(geom);
     }

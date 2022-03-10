@@ -9,15 +9,23 @@ namespace Alembic
     {
         #region Sampling Geom Schema
 
-        public bool GetPoint(string name, out Vector3[] point, out Matrix transform)
+        Dictionary<string, PinnedSequence<Vector3>> _pointsPool = new Dictionary<string, PinnedSequence<Vector3>>();
+
+        public bool GetPoint(string name, out PinnedSequence<Vector3> point, out Matrix transform)
         {
-            point = null;
+            point = default;
             transform = default;
             AlembicGeom geom = GetGeom(name);
 
             if(geom.Self != IntPtr.Zero && geom.Type == GeomType.Points)
             {
-                point = ((Points)geom).GetSample();
+                var pointGeom = (Points)geom;
+
+                _pointsPool.TryGetValue(name, out point);
+                pointGeom.GetSample(ref point);
+
+                _pointsPool[name] = point;
+
                 transform = geom.Transform;
 
                 return true;
@@ -26,9 +34,9 @@ namespace Alembic
             return false;
         }
 
-        public void GetPoints(out IEnumerable<Vector3[]> points, out IEnumerable<Matrix> transforms)
+        public void GetPoints(out IEnumerable<PinnedSequence<Vector3>> points, out IEnumerable<Matrix> transforms)
         {
-            var pts = new List<Vector3[]>();
+            var pts = new List<PinnedSequence<Vector3>>();
             var mats = new List<Matrix>();
 
             bool exist = false;
@@ -45,7 +53,7 @@ namespace Alembic
 
             if(exist)
             {
-                points = pts as IEnumerable<Vector3[]>;
+                points = pts as IEnumerable<PinnedSequence<Vector3>>;
                 transforms = mats as IEnumerable<Matrix>;
             }
             else

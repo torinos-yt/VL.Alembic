@@ -1,0 +1,25 @@
+shader VectorToMatrix_ComputeFX : ComputeShaderBase
+{
+    struct Matrix
+    {
+        float4x4 m;
+    };
+
+    RWStructuredBuffer<Matrix> Matricies;
+    StructuredBuffer<float3> Vectors;
+
+    int cnt;
+
+    override void Compute()
+    {
+        uint dtid = streams.DispatchThreadId.x;
+        if(dtid >= cnt) return;
+
+        float3 v = Vectors[dtid];
+
+        Matricies[dtid].m = float4x4(float4(1,0,0,0),
+                                    float4(0,1,0,0),
+                                    float4(0,0,1,0),
+                                    float4(v.x,v.y,v.z,1));
+    }
+};
