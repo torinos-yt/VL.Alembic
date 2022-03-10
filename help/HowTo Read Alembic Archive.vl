@@ -70,7 +70,7 @@
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="SceneWindow" />
             </p:NodeReference>
-            <Pin Id="USwcwbTqslpP64N0YAvdf0" Name="Bounds" Kind="InputPin" DefaultValue="1000, 40, 786, 432" />
+            <Pin Id="USwcwbTqslpP64N0YAvdf0" Name="Bounds" Kind="InputPin" DefaultValue="1028, 87, 786, 432" />
             <Pin Id="OPy90FEquXuMHDF9rk8U1x" Name="Input" Kind="InputPin" />
             <Pin Id="MBrBXVRnq2POSjsiHRw4Eo" Name="Camera" Kind="InputPin" />
             <Pin Id="BdZKsnn4cU1NY7AnS8gjGJ" Name="Enable Default Camera" Kind="InputPin" />
@@ -639,11 +639,10 @@
         <Link Id="UmMZaVHkFjKPIBGzjgWSY5" Ids="O0APTUFI5S3Njq9BJn0hwd,JWcEUE1zClZMO5Iwg2gn2E" />
         <Link Id="IasotlHWO0cP2TqzIDc8dH" Ids="HIGGN93WGP0M1Vtx5CaSzA,EAneIKqxd5qLGfLDThX4I5" />
         <Link Id="CQF5BvLfhAnPLyrpk9eCoF" Ids="AqTWrLHtrE2QSOtiRZWBBf,DV5YIQ0vHmtPZbhuU9C9BV" />
-        <Link Id="OcG2pSlkW4wNZEJ9C6C09O" Ids="BbhiqzludLkLhrrdZlAagg,OMveubPF97dPKQXSehZsHT" />
-        <Link Id="Fiu2fGC4haYMvt4O62FApd" Ids="BbhiqzludLkLhrrdZlAagg,SlYyTPIt0SoNggTUUIcbi9" />
         <Link Id="OZmHu4EI1KGQU7tikGVVNm" Ids="R8kqU30ALsRPAC9PX1xMnS,ErqbHwUFmSDMT13L5jJlhr" />
         <Link Id="QZkjjLjkXtcMpw84hJnIEb" Ids="HIGGN93WGP0M1Vtx5CaSzA,G9kQwAd4PYtO6F9OUE5YL7" />
         <Link Id="FfAy0SXA12tOwfLtSsXT2p" Ids="NQBIgJ3CqzANiTiTRKuv8k,I9hzqgQcdDBO9Iirnl1l7E" />
+        <Link Id="CtDAm81AiF5MqIgVb664ca" Ids="BbhiqzludLkLhrrdZlAagg,OMveubPF97dPKQXSehZsHT" />
       </Patch>
     </Node>
   </Patch>
