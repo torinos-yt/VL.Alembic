@@ -173,3 +173,11 @@ struct CameraParam
 	CameraParam(float aperture, float near, float far, float focal, float fov) :
 		Aperture(aperture), Near(near), Far(far), FocalLength(focal), FoV(fov) {};
 };
+
+struct DataPointer
+{
+	void* Pointer;
+	int Size;
+
+	DataPointer(void* ptr, int size) : Pointer(ptr), Size(size) {}
+};

@@ -31,6 +31,8 @@ abcrAPI void getPointSample(Points* points, float* o);
 
 abcrAPI int getPointCount(Points* points);
 
+abcrAPI void getCurveSample(Curves* curves, DataPointer* curvePtr, DataPointer* idxPtr);
+
 abcrAPI VertexLayout getPolyMeshLayout(PolyMesh* mesh);
 
 abcrAPI float* getPolyMeshSample(PolyMesh* mesh, int* size);

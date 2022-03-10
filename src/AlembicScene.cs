@@ -23,7 +23,7 @@ namespace Alembic
             if(scene.handle == IntPtr.Zero)
                 throw new FormatException("Failed Open : Illigal Format");
 
-            scene._nameArray = new string[scene.Count];
+            scene._nameArray = new string[scene.ObjectCount];
             for(int i = 0; i < scene._nameArray.Length; i++)
             {
                 unsafe
@@ -42,7 +42,7 @@ namespace Alembic
         /// <summary>
         /// Number of all Objects in the Archive (e.g. PolyMesh,Xform...)
         /// </summary>
-        public int Count => NativeMethods.getGeomCount(this);
+        public int ObjectCount => NativeMethods.getGeomCount(this);
 
         string[] _nameArray = new string[0];
         public string[] Names => _nameArray;

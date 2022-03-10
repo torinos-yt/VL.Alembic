@@ -51,6 +51,16 @@ namespace Alembic
         public Curves(IntPtr ptr) { self = ptr; }
         public Curves(AlembicGeom geom) { self = geom.Self; }
 
+        public (DataPointer, DataPointer) GetSample()
+        {
+            var ptr = NativeMethods.getCurveSample(this.self, out var curve, out var indices);
+            if(curve.Pointer == IntPtr.Zero || curve.Size <= 0
+                || indices.Pointer == IntPtr.Zero || indices.Size <= 0)
+                throw new InvalidOperationException();
+
+            return (curve, indices);
+        }
+
         public static explicit operator Curves(AlembicGeom geom) => new Curves(geom);
     }
 

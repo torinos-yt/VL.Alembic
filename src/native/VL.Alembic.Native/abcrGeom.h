@@ -169,37 +169,33 @@ class Curves : public abcrGeom
 {
 public:
 
-    int* _index = nullptr;
-    float* _points = nullptr;
+    uint32_t* _index = nullptr;
 
     Curves(AbcGeom::ICurves _curves);
     ~Curves()
     {
         if (_curves) _curves.reset();
-        if(this->_index)  delete this->_index;
-        if(this->_points) delete this->_points;
+        if(_index != nullptr)  delete[] _index;
     }
 
     const char* getTypeNmae() const { return "Curves"; }
     int getCurveCount() const { return _pointCount; }
-    inline void getIndexSpread(int* o) const 
-    {
-        memcpy(o, this->_index, _indexCount);
-    }
 
     void set(chrono_t time, Imath::M44f& transform) override;
 
-    inline bool get(float* o)
-    {
-        memcpy(o, this->_points, this->getCurveCount() * sizeof(V3f));
-        return true;
-    }
+    void resize(size_t size);
+
+    void get(DataPointer* ogeom, DataPointer* oidx);
 
 private:
 
     AbcGeom::ICurves _curves;
+    AbcGeom::ICurvesSchema::Sample _curveSample;
+
     int _pointCount;
     int _indexCount;
+
+    int _capacity;
 };
 
 class PolyMesh : public abcrGeom

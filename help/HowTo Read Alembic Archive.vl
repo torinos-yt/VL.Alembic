@@ -567,6 +567,27 @@
             </Patch>
             <ControlPoint Id="G9kQwAd4PYtO6F9OUE5YL7" Bounds="292,547" Alignment="Top" />
           </Node>
+          <Node Bounds="624,1046,58,19" Id="ALAlGHOtQKDMW2VlaGxwfz">
+            <p:NodeReference LastCategoryFullName="Alembic" LastSymbolSource="VL.Alembic.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <Choice Kind="ProcessAppFlag" Name="GetCurve" />
+            </p:NodeReference>
+            <Pin Id="NY76H8GZTp5PS26yqm15Sn" Name="Input" Kind="InputPin" />
+            <Pin Id="N0bCWYQsoKhQLgq3ornvo4" Name="Name" Kind="InputPin" />
+            <Pin Id="DcSkCegMtmFQd7rd1qhjHZ" Name="Curve" Kind="OutputPin" />
+            <Pin Id="LuLgEUWnhhgOJlK8HWzUk3" Name="Transform" Kind="OutputPin" />
+          </Node>
+          <Node Bounds="691,1046,63,19" Id="AZNN9NxBCliLHpkWCNRwWj">
+            <p:NodeReference LastCategoryFullName="Alembic" LastSymbolSource="VL.Alembic.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <Choice Kind="ProcessAppFlag" Name="GetCurves" />
+              <CategoryReference Kind="Category" Name="Alembic" NeedsToBeDirectParent="true" />
+            </p:NodeReference>
+            <Pin Id="TVw2JJkBLDHOSwNLhwH7Wn" Name="Input" Kind="InputPin" />
+            <Pin Id="N7stkDikvBnPtZweud9PL6" Name="Curves" Kind="OutputPin" />
+            <Pin Id="CvCsO5NEdwnOsRymSOQ9GY" Name="Transforms" Kind="OutputPin" />
+          </Node>
+          <Overlay Id="U4E3YFV441bPvKSwmyJIYW" Name="Curves" Bounds="541,972,287,141" />
         </Canvas>
         <Patch Id="OoV1yVxTpkNNLUukESP0V9" Name="Create" />
         <Patch Id="Ca1RQDROtT6QB0P1UE4I1Q" Name="Update" />

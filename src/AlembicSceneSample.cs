@@ -63,6 +63,57 @@ namespace Alembic
             }
         }
 
+        public bool GetCurve(string name, out DataPointer curve, out DataPointer indices, out Matrix transform)
+        {
+            curve = default;
+            indices = default;
+            transform = default;
+            AlembicGeom geom = GetGeom(name);
+
+            if(geom.Self != IntPtr.Zero && geom.Type == GeomType.Curves)
+            {
+                (curve, indices) = ((Curves)geom).GetSample();
+                transform = geom.Transform;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void GetCurves(out IEnumerable<DataPointer> curves, out IEnumerable<DataPointer> indices, out IEnumerable<Matrix> transforms)
+        {
+            var pts = new List<DataPointer>();
+            var inds = new List<DataPointer>();
+            var mats = new List<Matrix>();
+
+            bool exist = false;
+
+            foreach(var n in this.Names)
+            {
+                if(this.GetCurve(n, out var c, out var i, out var t))
+                {
+                    pts.Add(c);
+                    inds.Add(i);
+                    mats.Add(t);
+                    exist = true;
+                }
+            }
+
+            if(exist)
+            {
+                curves = pts as IEnumerable<DataPointer>;
+                indices = inds as IEnumerable<DataPointer>;
+                transforms = mats as IEnumerable<Matrix>;
+            }
+            else
+            {
+                curves = null;
+                indices = null;
+                transforms = null;
+            }
+        }
+
         public bool GetMesh(string name, out DataPointer ptr, out VertexDeclaration layout, out Matrix transform)
         {
             ptr = default;

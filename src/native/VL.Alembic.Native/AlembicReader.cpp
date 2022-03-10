@@ -62,6 +62,12 @@ abcrAPI int getPointCount(Points* points)
 	return points ? points->getPointCount() : -1;
 }
 
+abcrAPI void getCurveSample(Curves* curves, DataPointer* curvePtr, DataPointer* idxPtr)
+{
+	if (curves) curves->get(curvePtr, idxPtr);
+}
+
+
 abcrAPI VertexLayout getPolyMeshLayout(PolyMesh* mesh)
 {
 	return mesh ? mesh->getVertexLayout() : VertexLayout::Unknown;

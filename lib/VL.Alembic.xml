@@ -4,7 +4,7 @@
         <name>VL.Alembic</name>
     </assembly>
     <members>
-        <member name="P:Alembic.AlembicScene.Count">
+        <member name="P:Alembic.AlembicScene.ObjectCount">
             <summary>
             Number of all Objects in the Archive (e.g. PolyMesh,Xform...)
             </summary>

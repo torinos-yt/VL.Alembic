@@ -2,6 +2,7 @@ using System;
 using System.Security;
 using System.Runtime.InteropServices;
 using Stride.Core.Mathematics;
+using Stride.Graphics;
 
 namespace Alembic
 {
@@ -59,6 +60,13 @@ namespace Alembic
         public static extern int getPointCount(IntPtr self);
 
         #endregion // Points
+
+        #region Curves
+
+        [DllImport("VL.Alembic.Native.dll")]
+        public static extern int getCurveSample(IntPtr self, out DataPointer curve, out DataPointer indices);
+
+        #endregion // Curves
 
         #region PolyMesh
 

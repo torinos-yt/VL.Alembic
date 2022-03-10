@@ -193,60 +193,63 @@ Curves::Curves(AbcGeom::ICurves curves)
 
 void Curves::set(chrono_t time, Imath::M44f& transform)
 {
-    return; // TODO
-    /*if (this->constant) return;
+    if (this->_constant) return;
 
-    AbcGeom::ICurvesSchema curvSchema = m_curves.getSchema();
+    AbcGeom::ICurvesSchema curvSchema = _curves.getSchema();
     AbcGeom::ICurvesSchema::Sample curve_sample;
 
     ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
-    curvSchema.get(curve_sample, ss);
+    curvSchema.get(_curveSample, ss);
+}
 
-    P3fArraySamplePtr m_positions = curve_sample.getPositions();
+void Curves::resize(size_t size)
+{
+    if (size > _capacity)
+    {
+        size = std::max<size_t>(size, (size_t)_indexCount * 2);
 
-    size_t nCurves = curve_sample.getNumCurves();
-    const V3f* src = m_positions->get();
+        if (_index != nullptr) delete[] _index;
 
-    const Alembic::Util::int32_t* nVertices = curve_sample.getCurvesNumVertices()->get();
+        _index = new uint32_t[size];
+        _capacity = size;
+    }
+}
 
-    size_t nPts = 0;
+void Curves::get(DataPointer* ocurve, DataPointer* oidx)
+{
+    P3fArraySamplePtr positions = _curveSample.getPositions();
+
+    size_t nCurves = _curveSample.getNumCurves();
+    const Alembic::Util::int32_t* nVertices = _curveSample.getCurvesNumVertices()->get();
+
+    _indexCount = 0;
     for (size_t i = 0; i < nCurves; ++i)
     {
-        nPts += nVertices[i];
+        _indexCount += nVertices[i] * 2 - 2;
     }
 
-    if (this->curves == nullptr)
-    {
-        this->curves = new float[nPts*3];
-    }
-    else
-    {
-        delete this->curves;
-        this->curves = new float[nPts*3];
-    }
-
-    auto index = new int[nPts];
+    this->resize(_indexCount);
 
     int cnt = 0;
+    int cnt2 = 0;
     for (size_t i = 0; i < nCurves; ++i)
     {
         const int num = nVertices[i];
 
-        for (size_t j = 0; j < num; ++j)
+        for (size_t j = 0; j < num - (size_t)1; ++j)
         {
-            const V3f& v = *src;
-            this->curves[cnt * 3 + 0] = v.x;
-            this->curves[cnt * 3 + 1] = v.y;
-            this->curves[cnt * 3 + 2] = v.z;
-            src++;
-
-            index[cnt++] = (int)(j / (float)(num - 1));
+            int idx = cnt2 + j;
+            _index[cnt++] = (uint32_t)idx + 0;
+            _index[cnt++] = (uint32_t)idx + 1;
         }
+        cnt2 += num;
     }
 
-    this->index = index;*/
+    *ocurve = DataPointer((void*)positions->get(), (int)positions->size() * 4 * 3);
+    *oidx  = DataPointer(_index, _indexCount * 4);
 }
+
 
 PolyMesh::PolyMesh(AbcGeom::IPolyMesh pmesh)
     : abcrGeom(pmesh), _polymesh(pmesh), _hasRGB(false), _hasRGBA(false), _hasNormal(true), _hasUV(true),
@@ -373,7 +376,7 @@ float* PolyMesh::get(int* size)
         return nullptr;
     }
 
-    using tri = Imath::Vec3<unsigned int>;
+    using tri = Imath::Vec3<uint32_t>;
     using triArray = std::vector<tri>;
     triArray m_triangles;
     std::vector<int32_t> inds;
@@ -395,14 +398,14 @@ float* PolyMesh::get(int* size)
 
             if (count >= 3)
             {
-                m_triangles.push_back(tri((unsigned int)fBegin + 0,
-                    (unsigned int)fBegin + 1,
-                    (unsigned int)fBegin + 2));
+                m_triangles.push_back(tri((uint32_t)fBegin + 0,
+                    (uint32_t)fBegin + 1,
+                    (uint32_t)fBegin + 2));
                 for (size_t c = 3; c < count; ++c)
                 {
-                    m_triangles.push_back(tri((unsigned int)fBegin + 0,
-                        (unsigned int)fBegin + c - 1,
-                        (unsigned int)fBegin + c));
+                    m_triangles.push_back(tri((uint32_t)fBegin + 0,
+                        (uint32_t)fBegin + c - 1,
+                        (uint32_t)fBegin + c));
                 }
             }
         }
