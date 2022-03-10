@@ -27,11 +27,9 @@ namespace Alembic
         {
             if(_capacity >= size)
             {
-                Console.WriteLine("No Alloc");
                 _length = size;
                 return;
             }
-                Console.WriteLine("Alloc");
 
             int newSize = Math.Max(size, _capacity * 2);
 
@@ -57,7 +55,7 @@ namespace Alembic
 
 
         #region IEnumerable impl
-        
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(_array, _length);
         IEnumerator IEnumerable.GetEnumerator() => new Enumerator(_array, _length);
 
