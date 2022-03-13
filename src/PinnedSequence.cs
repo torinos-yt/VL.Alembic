@@ -56,13 +56,15 @@ namespace Alembic
 
         #region IEnumerable impl
 
+        public Enumerator GetEnumerator() => new Enumerator(_array, _length);
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(_array, _length);
         IEnumerator IEnumerable.GetEnumerator() => new Enumerator(_array, _length);
 
         public struct Enumerator : IEnumerator<T>
         {
             int _index;
-            T[] _array;
+            readonly T[] _array;
             int _length;
 
             internal Enumerator(T[] array, int length) => (_array, _length, _index) = (array, length, -1);
@@ -71,7 +73,7 @@ namespace Alembic
             object IEnumerator.Current => Current;
             public bool MoveNext() => ++_index < _length;
             public void Reset() => _index = -1;
-            public void Dispose() => _array = null;
+            public void Dispose() {}
         }
 
         #endregion // IEnumerable impl
