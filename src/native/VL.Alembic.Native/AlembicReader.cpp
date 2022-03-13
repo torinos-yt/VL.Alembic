@@ -67,7 +67,6 @@ abcrAPI void getCurveSample(Curves* curves, DataPointer* curvePtr, DataPointer* 
 	if (curves) curves->get(curvePtr, idxPtr);
 }
 
-
 abcrAPI VertexLayout getPolyMeshLayout(PolyMesh* mesh)
 {
 	return mesh ? mesh->getVertexLayout() : VertexLayout::Unknown;
