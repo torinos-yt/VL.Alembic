@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="BoPIypLkzjUNJB5bSc6qgc" Summary="Read Alembic archive File(.abc)" Authors="torinos" LanguageVersion="2021.4.6.835" Version="0.128">
+<Document xmlns:p="property" Id="BoPIypLkzjUNJB5bSc6qgc" Summary="Read Alembic archive File(.abc)" Authors="torinos" LanguageVersion="2021.4.7.906" Version="0.128">
   <Patch Id="UoJWuMll1uhPwf9evhPtJw">
     <Canvas Id="RGWXf62bNCKNy4wJcW79oA" DefaultCategory="Alembic" CanvasType="FullCategory">
       <!--
@@ -1616,6 +1616,20 @@
                 <Pin Id="CjFrAd2zNSNPgjDpDk0tGJ" Name="Value" Kind="InputPin" />
                 <Pin Id="CGfHt2ifTYKQS525Noon4A" Name="Output" Kind="StateOutputPin" />
               </Node>
+              <Node Bounds="928,1137" Id="SNw3qPKMf7jNi7S57ape4C">
+                <p:NodeReference LastCategoryFullName="Math" LastSymbolSource="CoreLibBasics.vl">
+                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                  <Choice Kind="OperationCallFlag" Name="*" />
+                </p:NodeReference>
+                <Pin Id="TLUXdVg7B94MihgZO2T3Me" Name="Input" Kind="InputPin" />
+                <Pin Id="MoObrfFHCHPLeIL2BnLtmB" Name="Input 2" Kind="InputPin" />
+                <Pin Id="JISPBQ6AZrbM1bxfrnxN3S" Name="Output" Kind="OutputPin" />
+              </Node>
+              <Pad Id="Bq75xS13RcgLyeQlIvrNYI" Comment="" Bounds="962,1112,35,15" ShowValueBox="true" isIOBox="true" Value="2">
+                <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+                  <Choice Kind="TypeFlag" Name="Integer32" />
+                </p:TypeAnnotation>
+              </Pad>
             </Canvas>
             <Patch Id="CXUJl4ZK7FiLoD8SUshluk" Name="Create" ParticipatingElements="LqZ8qT8VeGjM2uZHMGNIT2" />
             <Patch Id="Ae7D5jgMb9VNlm7A7hm8eC" Name="Update">
@@ -1651,7 +1665,6 @@
             <Link Id="D88hoCwVJnUNg48IPr6kZ8" Ids="RUYlaT8w8vYQKkzvFgXOR9,BdNlorL9QRFMMyLmLBJlX8" />
             <Link Id="JdyoeKj2Rd3Lbu7aKeYRym" Ids="BmcE1Flou1MQOyUZ0pqTKB,IO0rCeVrMkjMlCDzwpmBwT" />
             <Link Id="HJVA0ZquG6ZLeb062ViQGV" Ids="T3jXzTLwBh9PSlTTv7ptQH,ACTmdbW2gVkLOPqnKbukxm" />
-            <Link Id="EWdUUdbT8kvOybX6SHDYPC" Ids="O2xT1KqwbylLHMOW9vN3ib,BaPykxFAEY5QG20ix91a6D" />
             <Link Id="NWgq2iuOvL2LAdWJUtbUCO" Ids="B0eMQAdFPebNkqwXVAXvFC,AUUBvQBdf7aNiU5yAy5Vwn" />
             <Link Id="BxHyUCgEuMLMuhTKEuWLDi" Ids="OR22noiDZVDNjpH8zUa6Aq,DYABSAhLvLtMpHcrYxKGWx" />
             <Link Id="K3Jg78zobwMMUMhocneRUu" Ids="G5SgS5uotjXMiM9F5Zmf6a,MI1U4GOeovaQSYEJNLPYfY" />
@@ -1679,6 +1692,9 @@
             <Link Id="PnnMnQ5vS6bPqu5fDI5ZVZ" Ids="ThgTmz68pBNLSgQTj7e1dJ,CjFrAd2zNSNPgjDpDk0tGJ" />
             <Link Id="TuUfO4aL3yEOtjalWqntcu" Ids="CGfHt2ifTYKQS525Noon4A,HW3R4DK8DedLfjDTNO0LoT" />
             <Link Id="HScBkgkHbu2PxeJDEHSaEB" Ids="UEYSz77xc7NNiHspxBxGvW,G0JY6rRYBDSMc4qzO5bo9X" />
+            <Link Id="GGE1oMnWBOjMOp0pzvvgPo" Ids="O2xT1KqwbylLHMOW9vN3ib,TLUXdVg7B94MihgZO2T3Me" />
+            <Link Id="AYnqLDOl4ukP1uanLckg19" Ids="Bq75xS13RcgLyeQlIvrNYI,MoObrfFHCHPLeIL2BnLtmB" />
+            <Link Id="LxD6m59Jc5kO99C9Da9Et2" Ids="JISPBQ6AZrbM1bxfrnxN3S,BaPykxFAEY5QG20ix91a6D" />
           </Patch>
         </Node>
       </Canvas>
@@ -2578,10 +2594,10 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="SrNznLWhPLwLUp2ddfZiKQ" Location="VL.CoreLib" Version="2021.4.6" />
+  <NugetDependency Id="SrNznLWhPLwLUp2ddfZiKQ" Location="VL.CoreLib" Version="2021.4.7" />
   <PlatformDependency Id="BMncmg5uBG0OTdsxsZiqfK" Location="./lib/VL.Alembic.dll" />
-  <NugetDependency Id="THt36gZsmzgNT11TVpUhLf" Location="VL.Stride" Version="2021.4.6" />
+  <NugetDependency Id="THt36gZsmzgNT11TVpUhLf" Location="VL.Stride" Version="2021.4.7" />
   <PlatformDependency Id="M2kWK3GbbXeMYOjAZiSayY" Location="./lib/Stride.Rendering.dll" />
   <PlatformDependency Id="Bftbx3yEL6sOobJJgYBm4C" Location="./lib/Stride.Graphics.dll" />
-  <NugetDependency Id="DL8pLOSJvE7O4I8lzJqBfX" Location="VL.Stride.Runtime" Version="2021.4.6" />
+  <NugetDependency Id="DL8pLOSJvE7O4I8lzJqBfX" Location="VL.Stride.Runtime" Version="2021.4.7" />
 </Document>
