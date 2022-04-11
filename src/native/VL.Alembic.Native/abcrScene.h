@@ -24,11 +24,11 @@ class abcrScene
 
         inline float getMaxTime() const { return _maxTime; };
         inline float getMinTime() const { return _minTime; };
-        inline size_t getGeomCount() const { return _nameMap.size(); };
+        inline size_t getGeomCount() const { return _fullnameMap.size(); };
 
         inline map<string, shared_ptr<abcrGeom>>::const_iterator getGeomIterator() const
         {
-            return _nameMap.cbegin();
+            return _fullnameMap.cbegin();
         }
 
         inline abcrGeom* getGeom(const string& name) const
