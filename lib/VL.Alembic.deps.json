@@ -74,6 +74,14 @@
             "fileVersion": "2021.4.6.835"
           }
         }
+      },
+      "Stride.Core.Serialization/4.0.1.1": {
+        "runtime": {
+          "Stride.Core.Serialization.dll": {
+            "assemblyVersion": "4.0.1.1",
+            "fileVersion": "4.0.1.1"
+          }
+        }
       }
     }
   },
@@ -123,6 +131,11 @@
       "sha512": ""
     },
     "VL.CoreLib/2021.4.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Stride.Core.Serialization/4.0.1.1": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

@@ -27,6 +27,10 @@ abcrAPI AlembicType::Type getType(abcrGeom* geom);
 
 abcrAPI Matrix4x4 getTransform(abcrGeom* geom);
 
+abcrAPI float getGeomMinTime(abcrGeom* geom);
+
+abcrAPI float getGeomMaxTime(abcrGeom* geom);
+
 abcrAPI void getPointSample(Points* points, float* o);
 
 abcrAPI int getPointCount(Points* points);

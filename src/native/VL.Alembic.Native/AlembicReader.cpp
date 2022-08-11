@@ -52,6 +52,16 @@ abcrAPI Matrix4x4 getTransform(abcrGeom* geom)
 	return geom ? geom->getTransform() : Matrix4x4();
 }
 
+abcrAPI float getGeomMinTime(abcrGeom* geom)
+{
+	return geom ? geom->getMinTime() : -1;
+}
+
+abcrAPI float getGeomMaxTime(abcrGeom* geom)
+{
+	return geom ? geom->getMaxTime() : -1;
+}
+
 abcrAPI void getPointSample(Points* points, float* o)
 {
 	if (points) points->get(o);

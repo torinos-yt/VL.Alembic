@@ -29,14 +29,19 @@ namespace Alembic
                 unsafe
                 {
                     scene._nameArray[i] = new string(NativeMethods.getName(scene,i));
+                    scene.minTime = Math.Min(NativeMethods.getGeomMinTime(scene.GetGeom(scene._nameArray[i]).Self), scene.minTime);
+                    scene.maxTime = Math.Max(NativeMethods.getGeomMaxTime(scene.GetGeom(scene._nameArray[i]).Self), scene.maxTime);
                 }
             }
 
             return scene;
         }
 
-        public float MinTime => NativeMethods.getMinTime(this);
-        public float MaxTime => NativeMethods.getMaxTime(this);
+        float minTime = float.PositiveInfinity;
+        float maxTime = 0;
+
+        public float MinTime => Math.Min(NativeMethods.getMinTime(this), minTime);
+        public float MaxTime => Math.Max(NativeMethods.getMaxTime(this), maxTime);
         public Range<float> TimeRange => new Range<float>(MinTime, MaxTime);
 
         /// <summary>

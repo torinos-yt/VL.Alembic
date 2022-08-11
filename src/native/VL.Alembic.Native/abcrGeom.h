@@ -79,6 +79,10 @@ public:
 
     Matrix4x4 getTransform() const { return toVVVV(_transform); };
 
+    float getMinTime() const { return _minTime; };
+
+    float getMaxTime() const { return _maxTime; };
+
     virtual const char* getTypeName() const { return ""; };
 
     AlembicType::Type getType() const { return _type; };

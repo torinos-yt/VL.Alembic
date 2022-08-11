@@ -48,6 +48,12 @@ namespace Alembic
         [DllImport("VL.Alembic.Native.dll")]
         public static extern Matrix getTransform(IntPtr self);
 
+        [DllImport("VL.Alembic.Native.dll")]
+        public static extern float getGeomMinTime(IntPtr self);
+
+        [DllImport("VL.Alembic.Native.dll")]
+        public static extern float getGeomMaxTime(IntPtr self);
+
         #endregion // AlembicGeom
 
 
