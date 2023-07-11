@@ -10,12 +10,12 @@
       "VL.Alembic/1.0.0": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
-          "Stride.Core": "4.0.1.1",
-          "Stride.Core.Mathematics": "4.0.1.1",
-          "Stride": "4.0.1.1428",
-          "Stride.Graphics": "4.0.1.1428",
-          "Stride.Rendering": "4.0.1.1428",
-          "VL.CoreLib": "2021.4.0.0"
+          "Stride.Core": "4.1.0.1",
+          "Stride.Core.Mathematics": "4.1.0.1",
+          "Stride": "4.1.0.1838",
+          "Stride.Graphics": "4.1.0.1838",
+          "Stride.Rendering": "4.1.0.1838",
+          "VL.CoreLib": "2023.5.0.0"
         },
         "runtime": {
           "VL.Alembic.dll": {}
@@ -27,59 +27,67 @@
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
-      "Stride.Core/4.0.1.1": {
+      "Stride.Core/4.1.0.1": {
         "runtime": {
           "Stride.Core.dll": {
-            "assemblyVersion": "4.0.1.1",
-            "fileVersion": "4.0.1.1"
+            "assemblyVersion": "4.1.0.1",
+            "fileVersion": "4.1.0.1"
           }
         }
       },
-      "Stride.Core.Mathematics/4.0.1.1": {
+      "Stride.Core.Mathematics/4.1.0.1": {
         "runtime": {
           "Stride.Core.Mathematics.dll": {
-            "assemblyVersion": "4.0.1.1",
-            "fileVersion": "4.0.1.1"
+            "assemblyVersion": "4.1.0.1",
+            "fileVersion": "4.1.0.1"
           }
         }
       },
-      "Stride/4.0.1.1428": {
+      "Stride/4.1.0.1838": {
         "runtime": {
           "Stride.dll": {
-            "assemblyVersion": "4.0.1.1428",
-            "fileVersion": "4.0.1.1428"
+            "assemblyVersion": "4.1.0.1838",
+            "fileVersion": "4.1.0.1838"
           }
         }
       },
-      "Stride.Graphics/4.0.1.1428": {
+      "Stride.Graphics/4.1.0.1838": {
         "runtime": {
           "Stride.Graphics.dll": {
-            "assemblyVersion": "4.0.1.1428",
-            "fileVersion": "4.0.1.1428"
+            "assemblyVersion": "4.1.0.1838",
+            "fileVersion": "4.1.0.1838"
           }
         }
       },
-      "Stride.Rendering/4.0.1.1428": {
+      "Stride.Rendering/4.1.0.1838": {
         "runtime": {
           "Stride.Rendering.dll": {
-            "assemblyVersion": "4.0.1.1428",
-            "fileVersion": "4.0.1.1428"
+            "assemblyVersion": "4.1.0.1838",
+            "fileVersion": "4.1.0.1838"
           }
         }
       },
-      "VL.CoreLib/2021.4.0.0": {
+      "VL.CoreLib/2023.5.0.0": {
         "runtime": {
           "VL.CoreLib.dll": {
-            "assemblyVersion": "2021.4.0.0",
-            "fileVersion": "2021.4.6.835"
+            "assemblyVersion": "2023.5.0.0",
+            "fileVersion": "2023.5.2.1"
           }
         }
       },
-      "Stride.Core.Serialization/4.0.1.1": {
+      "VL.Core/2023.5.0.0": {
+        "runtime": {
+          "VL.Core.dll": {
+            "assemblyVersion": "2023.5.0.0",
+            "fileVersion": "2023.5.2.1"
+          }
+        }
+      },
+      "Stride.Core.Serialization/4.1.0.1": {
         "runtime": {
           "Stride.Core.Serialization.dll": {
-            "assemblyVersion": "4.0.1.1",
-            "fileVersion": "4.0.1.1"
+            "assemblyVersion": "4.1.0.1",
+            "fileVersion": "4.1.0.1"
           }
         }
       }
@@ -105,37 +113,42 @@
       "path": "netstandard.library/2.0.3",
       "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
-    "Stride.Core/4.0.1.1": {
+    "Stride.Core/4.1.0.1": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "Stride.Core.Mathematics/4.0.1.1": {
+    "Stride.Core.Mathematics/4.1.0.1": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "Stride/4.0.1.1428": {
+    "Stride/4.1.0.1838": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "Stride.Graphics/4.0.1.1428": {
+    "Stride.Graphics/4.1.0.1838": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "Stride.Rendering/4.0.1.1428": {
+    "Stride.Rendering/4.1.0.1838": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "VL.CoreLib/2021.4.0.0": {
+    "VL.CoreLib/2023.5.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "Stride.Core.Serialization/4.0.1.1": {
+    "VL.Core/2023.5.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Stride.Core.Serialization/4.1.0.1": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
