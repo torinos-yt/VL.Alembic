@@ -191,6 +191,7 @@ public:
     {
         if (_curves) _curves.reset();
         if(_index != nullptr)  delete[] _index;
+        if(_geom != nullptr)   delete[] _geom;
     }
 
     const char* getTypeNmae() const { return "Curves"; }
@@ -246,6 +247,8 @@ public:
 
     float* get(int* size);
 
+    int getMaxVertexCount();
+
 
 private:
 
@@ -278,6 +281,8 @@ private:
     size_t _vertexSize;
     int _vertexCount;
     int _capacity;
+
+    int _maxVertexCount = -1;
 
     AbcGeom::MeshTopologyVariance _topologyVariance;
 };

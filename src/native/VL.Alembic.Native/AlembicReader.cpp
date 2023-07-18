@@ -96,6 +96,11 @@ abcrAPI float* getPolyMeshSample(PolyMesh* mesh, int* size)
 	return mesh ? mesh->get(size) : nullptr;
 }
 
+abcrAPI int getPolyMeshMaxVertexCount(PolyMesh* mesh)
+{
+	return mesh ? mesh->getMaxVertexCount() : -1;
+}
+
 abcrAPI void getCameraSample(Camera* camera, Matrix4x4* v, CameraParam* p)
 {
 	if (camera) camera->get(v, p);

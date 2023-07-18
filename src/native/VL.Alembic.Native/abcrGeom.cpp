@@ -806,6 +806,38 @@ float* PolyMesh::get(int* size)
     return _geom;
 }
 
+int PolyMesh::getMaxVertexCount()
+{
+    if (_maxVertexCount != -1) return _maxVertexCount;
+
+    auto& mesh = _polymesh.getSchema();
+    auto sampleCount = _topologyVariance == 2 ? _numSamples : 1;
+
+    for (size_t i = 0; i < sampleCount; ++i)
+    {
+        AbcGeom::IPolyMeshSchema::Sample meshSample;
+        mesh.get(meshSample, i);
+        auto faces = meshSample.getFaceCounts()->get();
+        auto faceCount = meshSample.getFaceCounts()->size();
+
+        int vertexCount = 0;
+
+        for (size_t j = 0; j < faceCount; ++j)
+        {
+            size_t count = faces[j];
+
+            if (count <= 3)
+                vertexCount += count;
+            else
+                vertexCount += 3 + (count - 3) * 3;
+        }
+
+        _maxVertexCount = max(_maxVertexCount, vertexCount);
+    }
+
+    return _maxVertexCount;
+}
+
 Camera::Camera(AbcGeom::ICamera camera)
     : abcrGeom(camera), _camera(camera), _view(), _proj()
 {
