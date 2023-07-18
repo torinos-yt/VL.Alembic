@@ -81,6 +81,19 @@ void abcrGeom::setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, shared_p
         setUpDocRecursive(obj->_children[i], nameMap, fullnameMap);
 }
 
+void abcrGeom::getInterpolateSampleSelector(chrono_t time, ISampleSelector& ss0, ISampleSelector& ss1, chrono_t& t)
+{
+    auto prevTime = _samplingPtr->getSampleTime(_lastSampleIndex);
+
+    ss0 = ISampleSelector(time, prevTime < time ? ISampleSelector::kFloorIndex : ISampleSelector::kCeilIndex);
+    ss1 = ISampleSelector(time, prevTime < time ? ISampleSelector::kCeilIndex : ISampleSelector::kFloorIndex);
+
+    auto time0 = _samplingPtr->getSampleTime(ss0.getIndex(_samplingPtr, _numSamples));
+    auto time1 = _samplingPtr->getSampleTime(ss1.getIndex(_samplingPtr, _numSamples));
+
+    t = (time - time0) / (time1 - time0);
+}
+
 
 template<typename T>
 void abcrGeom::setMinMaxTime(T& obj)
@@ -130,16 +143,8 @@ void XForm::set(chrono_t time, Imath::M44f& transform)
     {
         if (_isInterpolate)
         {
-            auto prevTime = _samplingPtr->getSampleTime(_lastSampleIndex);
-
-            ISampleSelector ss0(time, prevTime < time ? ISampleSelector::kFloorIndex : ISampleSelector::kCeilIndex);
-            ISampleSelector ss1(time, prevTime < time ? ISampleSelector::kCeilIndex : ISampleSelector::kFloorIndex);
-
-            auto time0 = _samplingPtr->getSampleTime(ss0.getIndex(_samplingPtr, _numSamples));
-            auto time1 = _samplingPtr->getSampleTime(ss1.getIndex(_samplingPtr, _numSamples));
-
-            auto t = (time - time0) / (time1 - time0);
-            Log(("t : " + to_string(t)).c_str());
+            ISampleSelector ss0, ss1;
+            getInterpolateSampleSelector(time, ss0, ss1, _t);
 
             const Imath::M44d& m0 = _xform.getSchema().getValue(ss0).getMatrix();
             const Imath::M44d& m1 = _xform.getSchema().getValue(ss1).getMatrix();
@@ -154,10 +159,10 @@ void XForm::set(chrono_t time, Imath::M44f& transform)
 
             Imath::M44d m;
             m.makeIdentity();
-            m.scale(s0 * (1 - t) + s1 * t);
-            m *= Imath::slerpShortestArc(r0, r1, t).toMatrix44();
+            m.scale(s0 * (1 - _t) + s1 * _t);
+            m *= Imath::slerpShortestArc(r0, r1, _t).toMatrix44();
 
-            Imath::V3d t2 = t0 * (1 - t) + t1 * t;
+            Imath::V3d t2 = t0 * (1 - _t) + t1 * _t;
             m[3][0] = t2.x;
             m[3][1] = t2.y;
             m[3][2] = t2.z;
@@ -392,33 +397,77 @@ void PolyMesh::resize(size_t size)
 void PolyMesh::set(chrono_t time, Imath::M44f& transform)
 {
     if (_constant) return;
+    //_isInterpolate = false;
 
     AbcGeom::IPolyMeshSchema mesh = _polymesh.getSchema();
     AbcGeom::IN3fGeomParam N = mesh.getNormalsParam();
     AbcGeom::IV2fGeomParam UV = mesh.getUVsParam();
 
-    ISampleSelector ss(time, ISampleSelector::kNearIndex);
+    if (_isInterpolate)
+    {
+        ISampleSelector ss0, ss1;
+        getInterpolateSampleSelector(time, ss0, ss1, _t);
 
-    mesh.get(_meshSample, ss);
-    if(_hasNormal) _normSample = N.getExpandedValue(ss);
-    if(_hasUV) _uvSample = UV.getExpandedValue(ss);
+        mesh.get(_meshSample, ss0);
+        mesh.get(_meshSample2, ss1);
 
-    if (_hasRGB) _rgbSample = _rgbParam.getExpandedValue(ss);
-    else if(_hasRGBA) _rgbaSample = _rgbaParam.getExpandedValue(ss);
+        if (_hasNormal)
+        {
+            _normSample  = N.getExpandedValue(ss0);
+            _normSample2 = N.getExpandedValue(ss1);
+        }
+
+        if (_hasUV)
+        {
+            _uvSample  = UV.getExpandedValue(ss0);
+            _uvSample2 = UV.getExpandedValue(ss1);
+        }
+
+        if (_hasRGB)
+        {
+            _rgbSample  = _rgbParam.getExpandedValue(ss0);
+            _rgbSample2 = _rgbParam.getExpandedValue(ss1);
+        }
+        else if (_hasRGBA)
+        {
+            _rgbaSample  = _rgbaParam.getExpandedValue(ss0);
+            _rgbaSample2 = _rgbaParam.getExpandedValue(ss1);
+        }
+    }
+    else
+    {
+        ISampleSelector ss(time, ISampleSelector::kNearIndex);
+
+        mesh.get(_meshSample, ss);
+        if (_hasNormal) _normSample = N.getExpandedValue(ss);
+        if (_hasUV) _uvSample = UV.getExpandedValue(ss);
+
+        if (_hasRGB) _rgbSample = _rgbParam.getExpandedValue(ss);
+        else if (_hasRGBA) _rgbaSample = _rgbaParam.getExpandedValue(ss);
+    }
 }
 
 float* PolyMesh::get(int* size)
 {
+    //_isInterpolate = false;
     //sample some property
-    P3fArraySamplePtr m_points = _meshSample.getPositions();
+    P3fArraySamplePtr m_points, m_points2;
+    m_points = _meshSample.getPositions();
     Int32ArraySamplePtr m_indices = _meshSample.getFaceIndices();
     Int32ArraySamplePtr m_faceCounts = _meshSample.getFaceCounts();
 
-    N3fArraySamplePtr m_norms;
-    if(_hasNormal) m_norms = _normSample.getVals();
+    N3fArraySamplePtr m_norms, m_norms2;
+    if (_hasNormal) m_norms = _normSample.getVals();
 
-    V2fArraySamplePtr m_uvs;
-    if(_hasUV) m_uvs = _uvSample.getVals();
+    V2fArraySamplePtr m_uvs, m_uvs2;
+    if (_hasUV) m_uvs  = _uvSample.getVals();
+
+    if (_isInterpolate)
+    {
+        m_points2 = _meshSample2.getPositions();
+        if(_hasNormal) m_norms2 = _normSample2.getVals();
+        if(_hasUV) m_uvs2 = _uvSample2.getVals();
+    }
 
     size_t nPts = m_points->size();
     size_t nInds = m_indices->size();
@@ -469,9 +518,22 @@ float* PolyMesh::get(int* size)
     _vertexCount = m_triangles.size() * 3;
 
     {
-        const V3f* points = m_points->get();
-        const N3f* norms = _hasNormal ? m_norms->get() : nullptr;
-        const V2f* uvs = _hasUV ? m_uvs->get() : nullptr;
+        const V3f *points, *points2 = nullptr;
+        points = m_points->get();
+
+        const N3f *norms, *norms2 = nullptr;
+        norms = _hasNormal ? m_norms->get() : nullptr;
+
+        const V2f *uvs, *uvs2 = nullptr;
+        uvs = _hasUV ? m_uvs->get() : nullptr;
+
+        if (_isInterpolate)
+        {
+            points2 = m_points2->get();
+            norms2 = _hasNormal ? m_norms2->get() : nullptr;
+            uvs2 = _hasUV ? m_uvs2->get() : nullptr;
+        }
+
         const int32_t* indices = m_indices->get();
 
         float* stream = _geom;
@@ -479,30 +541,52 @@ float* PolyMesh::get(int* size)
         if (_hasRGB)
         {
             const auto cols_ptr = _rgbSample.getVals();
+            const auto cols_ptr2 = _rgbSample2.getVals();
             auto cdCount = cols_ptr->size();
             bool isIndexedColor = cdCount == m_points->size();
 
             const C3f* cols = cols_ptr->get();
+            const C3f* cols2 = cols_ptr2->get();
             for (size_t j = 0; j < m_triangles.size(); ++j)
             {
                 tri& t = m_triangles[j];
 
-                const V3f& v0 = points[indices[t[0]]];
-                const V2f& uv0 = _hasUV ? uvs[t[0]] : V2f(0);
-                const C3f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
+                V3f v0 = points[indices[t[0]]];
+                V2f uv0 = _hasUV ? uvs[t[0]] : V2f(0);
+                C3f col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
-                const V3f& v1 = points[indices[t[1]]];
-                const V2f& uv1 = _hasUV ? uvs[t[1]] : V2f(0);
-                const C3f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
+                V3f v1 = points[indices[t[1]]];
+                V2f uv1 = _hasUV ? uvs[t[1]] : V2f(0);
+                C3f col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
-                const V3f& v2 = points[indices[t[2]]];
-                const V2f& uv2 = _hasUV ? uvs[t[2]] : V2f(0);
-                const C3f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
+                V3f v2 = points[indices[t[2]]];
+                V2f uv2 = _hasUV ? uvs[t[2]] : V2f(0);
+                C3f col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
                 
-                const N3f& faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                const N3f& n0 = _hasNormal ? norms[t[0]] : faceNormal;
-                const N3f& n1 = _hasNormal ? norms[t[1]] : faceNormal;
-                const N3f& n2 = _hasNormal ? norms[t[2]] : faceNormal;
+                const N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                N3f n0 = _hasNormal ? norms[t[0]] : faceNormal;
+                N3f n1 = _hasNormal ? norms[t[1]] : faceNormal;
+                N3f n2 = _hasNormal ? norms[t[2]] : faceNormal;
+
+                if (_isInterpolate)
+                {
+                    v0 += (points2[indices[t[0]]] - v0) * _t;
+                    uv0 += _hasUV ? (uvs2[t[0]] - uv0) * _t : V2f(0);
+                    col0 += isIndexedColor ? (cols2[indices[t[0]]] - col0) * _t : (cols2[t[0]] - col0) * _t;
+
+                    v1 += (points2[indices[t[1]]] - v1) * _t;
+                    uv2 += _hasUV ? (uvs2[t[1]] - uv1) * _t : V2f(0);
+                    col1 += isIndexedColor ? (cols2[indices[t[1]]] - col1) * _t : (cols2[t[1]] - col1) * _t;
+
+                    v2 += (points2[indices[t[2]]] - v2) * _t;
+                    uv2 += _hasUV ? (uvs2[t[2]] - uv2) * _t : V2f(0);
+                    col2 += isIndexedColor ? (cols2[indices[t[2]]] - col2) * _t : (cols2[t[2]] - col2) * _t;
+
+                    const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                    n0 = _hasNormal ? n0 + (norms2[t[0]] - n0) * _t : faceNormal2;
+                    n1 = _hasNormal ? n1 + (norms2[t[1]] - n1) * _t : faceNormal2;
+                    n2 = _hasNormal ? n2 + (norms2[t[2]] - n2) * _t : faceNormal2;
+                }
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -527,26 +611,47 @@ float* PolyMesh::get(int* size)
             bool isIndexedColor = cdCount == m_points->size();
 
             const C4f* cols = _rgbaSample.getVals()->get();
+            const C4f* cols2 = _rgbaSample2.getVals()->get();
             for (size_t j = 0; j < m_triangles.size(); ++j)
             {
                 tri& t = m_triangles[j];
 
-                const V3f& v0 = points[indices[t[0]]];
-                const V2f& uv0 = _hasUV ? uvs[t[0]] : V2f(0);
-                const C4f& col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
+                V3f v0 = points[indices[t[0]]];
+                V2f uv0 = _hasUV ? uvs[t[0]] : V2f(0);
+                C4f col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
-                const V3f& v1 = points[indices[t[1]]];
-                const V2f& uv1 = _hasUV ? uvs[t[1]] : V2f(0);
-                const C4f& col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
+                V3f v1 = points[indices[t[1]]];
+                V2f uv1 = _hasUV ? uvs[t[1]] : V2f(0);
+                C4f col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
-                const V3f& v2 = points[indices[t[2]]];
-                const V2f& uv2 = _hasUV ? uvs[t[2]] : V2f(0);
-                const C4f& col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
+                V3f v2 = points[indices[t[2]]];
+                V2f uv2 = _hasUV ? uvs[t[2]] : V2f(0);
+                C4f col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
 
-                const N3f& faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                const N3f& n0 = _hasNormal ? norms[t[0]] : faceNormal;
-                const N3f& n1 = _hasNormal ? norms[t[1]] : faceNormal;
-                const N3f& n2 = _hasNormal ? norms[t[2]] : faceNormal;
+                N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                N3f n0 = _hasNormal ? norms[t[0]] : faceNormal;
+                N3f n1 = _hasNormal ? norms[t[1]] : faceNormal;
+                N3f n2 = _hasNormal ? norms[t[2]] : faceNormal;
+
+                if (_isInterpolate)
+                {
+                    v0 += (points2[indices[t[0]]] - v0) * _t;
+                    uv0 += _hasUV ? (uvs2[t[0]] - uv0) * _t : V2f(0);
+                    col0 += isIndexedColor ? (cols2[indices[t[0]]] - col0) * _t : (cols2[t[0]] - col0) * _t;
+
+                    v1 += (points2[indices[t[1]]] - v1) * _t;
+                    uv2 += _hasUV ? (uvs2[t[1]] - uv1) * _t : V2f(0);
+                    col1 += isIndexedColor ? (cols2[indices[t[1]]] - col1) * _t : (cols2[t[1]] - col1) * _t;
+
+                    v2 += (points2[indices[t[2]]] - v1) * _t;
+                    uv2 += _hasUV ? (uvs2[t[2]] - uv1) * _t : V2f(0);
+                    col2 += isIndexedColor ? (cols2[indices[t[2]]] - col2) * _t : (cols2[t[2]] - col2) * _t;
+
+                    const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                    n0 = _hasNormal ? n0 + (norms2[t[0]] - n0) * _t : faceNormal2;
+                    n1 = _hasNormal ? n1 + (norms2[t[1]] - n1) * _t : faceNormal2;
+                    n2 = _hasNormal ? n2 + (norms2[t[2]] - n2) * _t : faceNormal2;
+                }
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -570,19 +675,36 @@ float* PolyMesh::get(int* size)
             {
                 tri& t = m_triangles[j];
 
-                const V3f& v0 = points[indices[t[0]]];
-                const V2f& uv0 = _hasUV ? uvs[t[0]] : V2f(0);
+                V3f v0 = points[indices[t[0]]];
+                V2f uv0 = _hasUV ? uvs[t[0]] : V2f(0);
 
-                const V3f& v1 = points[indices[t[1]]];
-                const V2f& uv1 = _hasUV ? uvs[t[1]] : V2f(0);
+                V3f v1 = points[indices[t[1]]];
+                V2f uv1 = _hasUV ? uvs[t[1]] : V2f(0);
 
-                const V3f& v2 = points[indices[t[2]]];
-                const V2f& uv2 = _hasUV ? uvs[t[2]] : V2f(0);
+                V3f v2 = points[indices[t[2]]];
+                V2f uv2 = _hasUV ? uvs[t[2]] : V2f(0);
 
-                const N3f& faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                const N3f& n0 = _hasNormal ? norms[t[0]] : faceNormal;
-                const N3f& n1 = _hasNormal ? norms[t[1]] : faceNormal;
-                const N3f& n2 = _hasNormal ? norms[t[2]] : faceNormal;
+                N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                N3f n0 = _hasNormal ? norms[t[0]] : faceNormal;
+                N3f n1 = _hasNormal ? norms[t[1]] : faceNormal;
+                N3f n2 = _hasNormal ? norms[t[2]] : faceNormal;
+
+                if (_isInterpolate)
+                {
+                    v0 += (points2[indices[t[0]]] - v0) * _t;
+                    uv0 += _hasUV ? (uvs2[t[0]] - uv0) * _t : V2f(0);
+
+                    v1 += (points2[indices[t[1]]] - v1) * _t;
+                    uv2 += _hasUV ? (uvs2[t[1]] - uv1) * _t : V2f(0);
+
+                    v2 += (points2[indices[t[2]]] - v2) * _t;
+                    uv2 += _hasUV ? (uvs2[t[2]] - uv2) * _t : V2f(0);
+
+                    const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                    n0 = _hasNormal ? n0 + (norms2[t[0]] - n0) * _t : faceNormal2;
+                    n1 = _hasNormal ? n1 + (norms2[t[1]] - n1) * _t : faceNormal2;
+                    n2 = _hasNormal ? n2 + (norms2[t[2]] - n2) * _t : faceNormal2;
+                }
 
                 copyTo(stream, v0);
                 copyTo(stream, n0);
@@ -623,19 +745,39 @@ void Camera::set(chrono_t time, Imath::M44f& transform)
 {
     if (!_constant)
     {
-        ISampleSelector ss(time, ISampleSelector::kNearIndex);
+        float Aperture, Near, Far, ForcalLength, FoV;
+        if(_isInterpolate)
+        { 
+            ISampleSelector ss0, ss1;
+            getInterpolateSampleSelector(time, ss0, ss1, _t);
 
-        AbcGeom::CameraSample cam_samp;
-        AbcGeom::ICameraSchema camSchema = _camera.getSchema();
+            AbcGeom::CameraSample cam_samp, cam_samp2;
+            AbcGeom::ICameraSchema camSchema = _camera.getSchema();
 
-        camSchema.get(cam_samp);
+            camSchema.get(cam_samp, ss0);
+            camSchema.get(cam_samp2, ss1);
 
-        float Aperture = cam_samp.getVerticalAperture();
-        float Near = std::max(cam_samp.getNearClippingPlane(), .001);
-        float Far = std::min(cam_samp.getFarClippingPlane(), 100000.0);
-        float ForcalLength = cam_samp.getFocalLength();
-        float FoV = 2.0 * (atan(Aperture * 10.0 / (2.0 * ForcalLength))) * (180.0f / M_PI);
+            Aperture = cam_samp.getVerticalAperture() * (1 - _t) + cam_samp2.getVerticalAperture() * _t;
+            Near = std::max(cam_samp.getNearClippingPlane() * (1 - _t) + cam_samp2.getNearClippingPlane() * _t, .001);
+            Far = std::min(cam_samp.getFarClippingPlane() * (1 - _t) + cam_samp2.getFarClippingPlane() * _t, 100000.0);
+            ForcalLength = cam_samp.getFocalLength() * (1 - _t) + cam_samp2.getFocalLength() * _t;
+        }
+        else
+        {
+            ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
+            AbcGeom::CameraSample cam_samp;
+            AbcGeom::ICameraSchema camSchema = _camera.getSchema();
+
+            camSchema.get(cam_samp, ss);
+
+            Aperture = cam_samp.getVerticalAperture();
+            Near = std::max(cam_samp.getNearClippingPlane(), .001);
+            Far = std::min(cam_samp.getFarClippingPlane(), 100000.0);
+            ForcalLength = cam_samp.getFocalLength();
+        }
+
+        FoV = 2.0 * (atan(Aperture * 10.0 / (2.0 * ForcalLength))) * (180.0f / M_PI);
         _proj = CameraParam(Aperture, Near, Far, ForcalLength, FoV * (1.0f / 360));
     }
 

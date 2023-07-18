@@ -92,7 +92,7 @@ public:
     template<typename T>
     inline bool isTypeOf() const { return _type == type2enum<T>(); };
 
-    virtual void setInterpolate(bool interpolate) { _isInterpolate = interpolate; }
+    virtual void setInterpolate(bool interpolate) { _isInterpolate = interpolate && !_constant; }
 
     void setUpNodeRecursive(IObject obj);
     static void setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, shared_ptr<abcrGeom>>& nameMap, map<string, shared_ptr<abcrGeom>>& fullnameMap);
@@ -117,6 +117,8 @@ protected:
     virtual void updateTimeSample(chrono_t time, Imath::M44f& transform);
     virtual void set(chrono_t time, Imath::M44f& transform) {};
 
+    void getInterpolateSampleSelector(chrono_t time, ISampleSelector& ss0, ISampleSelector& ss1, chrono_t& t);
+
     template<typename T>
     void setMinMaxTime(T& obj);
 
@@ -124,6 +126,7 @@ protected:
     index_t _lastSampleIndex = 0;
 
     bool _isInterpolate = false;
+    double _t;
 
     TimeSamplingPtr _samplingPtr;
 };
@@ -227,7 +230,7 @@ public:
     AbcGeom::MeshTopologyVariance getTopologyVariance() const { return _topologyVariance; }
     void set(chrono_t time, Imath::M44f& transform) override;
 
-    void setInterpolate(bool interpolate) { _isInterpolate = interpolate && (_topologyVariance != 2); }
+    void setInterpolate(bool interpolate) { _isInterpolate = interpolate && (_topologyVariance == 1) && !_constant; }
 
     void resize(size_t size);
 
@@ -246,11 +249,19 @@ private:
     AbcGeom::IC4fGeomParam _rgbaParam;
 
     AbcGeom::IPolyMeshSchema::Sample _meshSample;
+    AbcGeom::IPolyMeshSchema::Sample _meshSample2;
+
     AbcGeom::IV2fGeomParam::Sample _uvSample;
+    AbcGeom::IV2fGeomParam::Sample _uvSample2;
+
     AbcGeom::IN3fGeomParam::Sample _normSample;
+    AbcGeom::IN3fGeomParam::Sample _normSample2;
 
     AbcGeom::IC3fGeomParam::Sample _rgbSample;
+    AbcGeom::IC3fGeomParam::Sample _rgbSample2;
+
     AbcGeom::IC4fGeomParam::Sample _rgbaSample;
+    AbcGeom::IC4fGeomParam::Sample _rgbaSample2;
 
     VertexLayout _layout;
         
