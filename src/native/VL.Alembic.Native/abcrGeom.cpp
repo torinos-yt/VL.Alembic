@@ -209,16 +209,35 @@ Points::Points(AbcGeom::IPoints points)
 
 void Points::set(chrono_t time, Imath::M44f& transform)
 {
-    if (_constant) return;
+    if (this->_constant) return;
 
     AbcGeom::IPointsSchema ptSchema = _points.getSchema();
-    AbcGeom::IPointsSchema::Sample pts_sample;
+    AbcGeom::IPointsSchema::Sample pts_sample, pts_sample2;
 
-    ISampleSelector ss(time, ISampleSelector::kNearIndex);
+    if (_isInterpolate)
+    {
+        ISampleSelector ss0, ss1;
+        getInterpolateSampleSelector(time, ss0, ss1, _t);
 
-    ptSchema.get(pts_sample, ss);
+        ptSchema.get(pts_sample, ss0);
+        ptSchema.get(pts_sample2, ss1);
+        _positions = pts_sample.getPositions();
+        _positions2 = pts_sample2.getPositions();
 
-    _positions = pts_sample.getPositions();
+        _lastSampleIndex = ss0.getIndex(_samplingPtr, _numSamples);
+
+        _isInterpolate = _positions->size() == _positions2->size();
+    }
+
+    if(!_isInterpolate)
+    {
+        ISampleSelector ss(time, ISampleSelector::kNearIndex);
+        ptSchema.get(pts_sample, ss);
+        _positions = pts_sample.getPositions();
+
+        _lastSampleIndex = ss.getIndex(_samplingPtr, _numSamples);
+    }
+
     _pointCount = _positions->size();
 }
 
@@ -226,7 +245,20 @@ bool Points::get(float* o)
 {
     const V3f* src = _positions->get();
 
-    memcpy(o, src, this->getPointCount() * sizeof(V3f));
+    if (_isInterpolate)
+    {
+        const V3f* src2 = _positions2->get();
+
+        for (size_t i = 0; i < _pointCount; ++i)
+        {
+            copyTo(o, src[i] * (1 - _t) + src2[i] * _t);
+        }
+    }
+    else
+    {
+        memcpy(o, src, this->getPointCount() * sizeof(V3f));
+    }
+
     return true;
 }
 
@@ -238,6 +270,7 @@ Curves::Curves(AbcGeom::ICurves curves)
 
     _samplingPtr = curves.getSchema().getTimeSampling();
     _numSamples = curves.getSchema().getNumSamples();
+    _topologyVariance = curves.getSchema().getTopologyVariance();
 
     if (curves.getSchema().isConstant())
     {
@@ -251,23 +284,49 @@ void Curves::set(chrono_t time, Imath::M44f& transform)
     if (this->_constant) return;
 
     AbcGeom::ICurvesSchema curvSchema = _curves.getSchema();
-    AbcGeom::ICurvesSchema::Sample curve_sample;
 
-    ISampleSelector ss(time, ISampleSelector::kNearIndex);
+    if (_isInterpolate)
+    {
+        ISampleSelector ss0, ss1;
+        getInterpolateSampleSelector(time, ss0, ss1, _t);
 
-    curvSchema.get(_curveSample, ss);
+        curvSchema.get(_curveSample, ss0);
+        curvSchema.get(_curveSample2, ss1);
+
+        _lastSampleIndex = ss0.getIndex(_samplingPtr, _numSamples);
+    }
+    else
+    {
+        ISampleSelector ss(time, ISampleSelector::kNearIndex);
+        curvSchema.get(_curveSample, ss);
+
+        _lastSampleIndex = ss.getIndex(_samplingPtr, _numSamples);
+    }
 }
 
-void Curves::resize(size_t size)
+void Curves::resizeIndex(size_t size)
 {
-    if (size > _capacity)
+    if (size > _indexCapacity)
     {
         size = std::max<size_t>(size, (size_t)_indexCount * 2);
 
         if (_index != nullptr) delete[] _index;
 
         _index = new uint32_t[size];
-        _capacity = size;
+        _indexCapacity = size;
+    }
+}
+
+void Curves::resizeGeom(size_t size)
+{
+    if (size > _pointCapacity)
+    {
+        size = std::max<size_t>(size, (size_t)_pointCount * 2);
+
+        if (_index != nullptr) delete[] _geom;
+
+        _geom = new float[size * 3];
+        _pointCapacity = size;
     }
 }
 
@@ -284,7 +343,10 @@ void Curves::get(DataPointer* ocurve, DataPointer* oidx)
         _indexCount += nVertices[i] * 2 - 2;
     }
 
-    this->resize(_indexCount);
+    _pointCount = positions->size();
+
+    this->resizeIndex(_indexCount);
+    this->resizeGeom(_pointCount);
 
     int cnt = 0;
     int cnt2 = 0;
@@ -301,10 +363,27 @@ void Curves::get(DataPointer* ocurve, DataPointer* oidx)
         cnt2 += num;
     }
 
-    *ocurve = DataPointer((void*)positions->get(), (int)positions->size() * 4 * 3);
     *oidx  = DataPointer(_index, _indexCount * 4);
-}
 
+    if (_isInterpolate)
+    {
+        P3fArraySamplePtr positions2 = _curveSample2.getPositions();
+
+        const V3f* pts = positions->get();
+        const V3f* pts2 = positions2->get();
+
+        for (size_t i = 0; i < _pointCount; ++i)
+        {
+            copyTo(_geom, pts[i] * (1 - _t) + pts2[i] * _t);
+        }
+
+        *ocurve = DataPointer((void*)_geom, (int)positions->size() * 4 * 3);
+    }
+    else
+    {
+        *ocurve = DataPointer((void*)positions->get(), (int)positions->size() * 4 * 3);
+    }
+}
 
 PolyMesh::PolyMesh(AbcGeom::IPolyMesh pmesh)
     : abcrGeom(pmesh), _polymesh(pmesh), _hasRGB(false), _hasRGBA(false), _hasNormal(true), _hasUV(true),
@@ -397,7 +476,6 @@ void PolyMesh::resize(size_t size)
 void PolyMesh::set(chrono_t time, Imath::M44f& transform)
 {
     if (_constant) return;
-    //_isInterpolate = false;
 
     AbcGeom::IPolyMeshSchema mesh = _polymesh.getSchema();
     AbcGeom::IN3fGeomParam N = mesh.getNormalsParam();
@@ -433,6 +511,8 @@ void PolyMesh::set(chrono_t time, Imath::M44f& transform)
             _rgbaSample  = _rgbaParam.getExpandedValue(ss0);
             _rgbaSample2 = _rgbaParam.getExpandedValue(ss1);
         }
+
+        _lastSampleIndex = ss0.getIndex(_samplingPtr, _numSamples);
     }
     else
     {
@@ -444,12 +524,13 @@ void PolyMesh::set(chrono_t time, Imath::M44f& transform)
 
         if (_hasRGB) _rgbSample = _rgbParam.getExpandedValue(ss);
         else if (_hasRGBA) _rgbaSample = _rgbaParam.getExpandedValue(ss);
+
+        _lastSampleIndex = ss.getIndex(_samplingPtr, _numSamples);
     }
 }
 
 float* PolyMesh::get(int* size)
 {
-    //_isInterpolate = false;
     //sample some property
     P3fArraySamplePtr m_points, m_points2;
     m_points = _meshSample.getPositions();
@@ -761,6 +842,8 @@ void Camera::set(chrono_t time, Imath::M44f& transform)
             Near = std::max(cam_samp.getNearClippingPlane() * (1 - _t) + cam_samp2.getNearClippingPlane() * _t, .001);
             Far = std::min(cam_samp.getFarClippingPlane() * (1 - _t) + cam_samp2.getFarClippingPlane() * _t, 100000.0);
             ForcalLength = cam_samp.getFocalLength() * (1 - _t) + cam_samp2.getFocalLength() * _t;
+
+            _lastSampleIndex = ss0.getIndex(_samplingPtr, _numSamples);
         }
         else
         {
@@ -775,6 +858,8 @@ void Camera::set(chrono_t time, Imath::M44f& transform)
             Near = std::max(cam_samp.getNearClippingPlane(), .001);
             Far = std::min(cam_samp.getFarClippingPlane(), 100000.0);
             ForcalLength = cam_samp.getFocalLength();
+
+            _lastSampleIndex = ss.getIndex(_samplingPtr, _numSamples);
         }
 
         FoV = 2.0 * (atan(Aperture * 10.0 / (2.0 * ForcalLength))) * (180.0f / M_PI);

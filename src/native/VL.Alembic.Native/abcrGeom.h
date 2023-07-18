@@ -92,7 +92,7 @@ public:
     template<typename T>
     inline bool isTypeOf() const { return _type == type2enum<T>(); };
 
-    virtual void setInterpolate(bool interpolate) { _isInterpolate = interpolate && !_constant; }
+    virtual void setInterpolate(bool interpolate) { _isInterpolate = interpolate; }
 
     void setUpNodeRecursive(IObject obj);
     static void setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, shared_ptr<abcrGeom>>& nameMap, map<string, shared_ptr<abcrGeom>>& fullnameMap);
@@ -174,6 +174,8 @@ private:
     AbcGeom::IPoints _points;
 
     P3fArraySamplePtr _positions;
+    P3fArraySamplePtr _positions2;
+
     int _pointCount;
 };
 
@@ -182,6 +184,7 @@ class Curves : public abcrGeom
 public:
 
     uint32_t* _index = nullptr;
+    float* _geom = nullptr;
 
     Curves(AbcGeom::ICurves _curves);
     ~Curves()
@@ -195,7 +198,10 @@ public:
 
     void set(chrono_t time, Imath::M44f& transform) override;
 
-    void resize(size_t size);
+    void setInterpolate(bool interpolate) { _isInterpolate = interpolate && (_topologyVariance == 1) && !_constant; }
+
+    void resizeIndex(size_t size);
+    void resizeGeom(size_t size);
 
     void get(DataPointer* ogeom, DataPointer* oidx);
 
@@ -203,11 +209,15 @@ private:
 
     AbcGeom::ICurves _curves;
     AbcGeom::ICurvesSchema::Sample _curveSample;
+    AbcGeom::ICurvesSchema::Sample _curveSample2;
 
     int _pointCount;
     int _indexCount;
 
-    int _capacity;
+    int _indexCapacity;
+    int _pointCapacity;
+
+    AbcGeom::MeshTopologyVariance _topologyVariance;
 };
 
 class PolyMesh : public abcrGeom
