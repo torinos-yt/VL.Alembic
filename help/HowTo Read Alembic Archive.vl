@@ -612,6 +612,24 @@
               <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
             </p:ValueBoxSettings>
           </Pad>
+          <Pad Id="V3RG3w8vXksN0syAnf5onw" Comment="Interpolate Sample" Bounds="283,-325,35,35" ShowValueBox="true" isIOBox="true" Value="True">
+            <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
+              <Choice Kind="ImmutableTypeFlag" Name="Boolean" />
+              <CategoryReference Kind="Category" Name="Primitive" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Toggle</p:buttonmode>
+            </p:ValueBoxSettings>
+          </Pad>
+          <Pad Id="DVjfa0OPb5oQbBxa55bmCI" Bounds="425,-326,178,109" ShowValueBox="true" isIOBox="true" Value="Interpolate animation, only if it is possible (Transform, Mesh with unchanged Topology, etc.).">
+            <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
+              <Choice Kind="TypeFlag" Name="String" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:fontsize p:Type="Int32">10</p:fontsize>
+              <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
+            </p:ValueBoxSettings>
+          </Pad>
         </Canvas>
         <Patch Id="OoV1yVxTpkNNLUukESP0V9" Name="Create" />
         <Patch Id="Ca1RQDROtT6QB0P1UE4I1Q" Name="Update" />
@@ -688,7 +706,8 @@
         <Link Id="A8nDeOX2e1APK4kLxb4POy" Ids="PCvRiEgDoNeQcUfHW4DoNH,FoM0D6IfsSwMWDuHMvkJOi" />
         <Link Id="MsgOSZTPQQWO1oikI0KZqd" Ids="RLuoqiZhehCMVdwCTxdIHp,KTj9vszW2mBN7kSdxpfBOY" />
         <Link Id="TSY50LM23VfNp7EBd4pTDT" Ids="KTr7ANUohYbMjm7W4KHmo5,MBrBXVRnq2POSjsiHRw4Eo" />
-        <Link Id="SvILUGd3n03QRnBsJwcwCZ" Ids="Imp5qhxIog4NdebpRu0aKy,NpFPn3hVLJtLq6dVjYQ2Ez" />
+        <Link Id="DjZUB2Jn730OsuzHbfAEtR" Ids="V3RG3w8vXksN0syAnf5onw,SX7gW70tOU9LC3KlcdEGoX" />
+        <Link Id="HJ7nP5kN43lLHR05gzto7F" Ids="Imp5qhxIog4NdebpRu0aKy,NpFPn3hVLJtLq6dVjYQ2Ez" />
       </Patch>
     </Node>
   </Patch>
