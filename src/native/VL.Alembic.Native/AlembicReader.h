@@ -1,6 +1,7 @@
 #pragma once
 #include "abcr.h"
 #include "abcrScene.h"
+#include "abcrUtils.h"
 
 using namespace std;
 
@@ -42,3 +43,5 @@ abcrAPI VertexLayout getPolyMeshLayout(PolyMesh* mesh);
 abcrAPI float* getPolyMeshSample(PolyMesh* mesh, int* size);
 
 abcrAPI void getCameraSample(Camera* camera, Matrix4x4* v, CameraParam* p);
+
+abcrAPI void RegisterDebugFunc(DebugFunction fp);

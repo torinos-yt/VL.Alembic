@@ -92,6 +92,8 @@ public:
     template<typename T>
     inline bool isTypeOf() const { return _type == type2enum<T>(); };
 
+    virtual void setInterpolate(bool interpolate) { _isInterpolate = interpolate; }
+
     void setUpNodeRecursive(IObject obj);
     static void setUpDocRecursive(shared_ptr<abcrGeom>& obj, map<string, shared_ptr<abcrGeom>>& nameMap, map<string, shared_ptr<abcrGeom>>& fullnameMap);
 
@@ -100,6 +102,7 @@ protected:
     AlembicType::Type _type;
 
     size_t _index;
+    size_t _numSamples = 0;
 
     chrono_t _minTime;
     chrono_t _maxTime;
@@ -119,6 +122,8 @@ protected:
 
     bool _isUpdate = true;
     index_t _lastSampleIndex = 0;
+
+    bool _isInterpolate = false;
 
     TimeSamplingPtr _samplingPtr;
 };
@@ -219,7 +224,10 @@ public:
     int getVertexCount() const { return _vertexCount; }
     size_t getVertexSize() const { return _vertexSize; }
     VertexLayout getVertexLayout() const { return _layout; }
+    AbcGeom::MeshTopologyVariance getTopologyVariance() const { return _topologyVariance; }
     void set(chrono_t time, Imath::M44f& transform) override;
+
+    void setInterpolate(bool interpolate) { _isInterpolate = interpolate && (_topologyVariance != 2); }
 
     void resize(size_t size);
 
@@ -249,6 +257,8 @@ private:
     size_t _vertexSize;
     int _vertexCount;
     int _capacity;
+
+    AbcGeom::MeshTopologyVariance _topologyVariance;
 };
 
 class Camera : public abcrGeom

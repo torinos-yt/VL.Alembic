@@ -71,6 +71,14 @@ namespace Alembic
         Unknown
     }
 
+    internal enum MeshTopologyVariance
+    {
+        kConstantTopology = 0,
+        kHomogeneousTopology = 1,
+        kHeterogeneousTopology = 2,
+        UnKnown = -1,
+    };
+
     internal class PolyMesh : GeomPtr
     {
         public PolyMesh(IntPtr ptr) { self = ptr; }

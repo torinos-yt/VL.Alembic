@@ -46,6 +46,8 @@ class abcrScene
 
             return result;
         }
+
+        inline void setInterpolate(bool interpolate) { _isInterpolate = interpolate; }
             
         //bool getSample(const string& name, Matrix4x4* xform);                     //XForm
         //bool getSample(const string& name, float* points);                        //Points
@@ -63,4 +65,6 @@ class abcrScene
 
         map<string, shared_ptr<abcrGeom>> _nameMap;
         map<string, shared_ptr<abcrGeom>> _fullnameMap;
+
+        bool _isInterpolate = false;
 };

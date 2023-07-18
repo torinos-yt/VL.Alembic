@@ -38,6 +38,7 @@ bool abcrScene::updateSample(chrono_t time)
 
     Imath::M44f m;
     m.makeIdentity();
+    _top->setInterpolate(_isInterpolate);
     _top->updateTimeSample(time, m);
 
     return true;

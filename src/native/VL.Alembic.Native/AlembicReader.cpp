@@ -1,5 +1,4 @@
 #include "AlembicReader.h"
-#include "abcrUtils.h"
 
 abcrAPI abcrScene* openScene(const char* path)
 {
@@ -42,6 +41,11 @@ abcrAPI void updateTime(abcrScene* scene, float time)
 	if (scene) scene->updateSample(time);
 }
 
+abcrAPI void setInterpolate(abcrScene* scene, bool interpolate)
+{
+	if (scene) scene->setInterpolate(interpolate);
+}
+
 abcrAPI AlembicType::Type getType(abcrGeom* geom)
 {
 	return geom ? geom->getType() : AlembicType::UNKNOWN;
@@ -82,6 +86,11 @@ abcrAPI VertexLayout getPolyMeshLayout(PolyMesh* mesh)
 	return mesh ? mesh->getVertexLayout() : VertexLayout::Unknown;
 }
 
+abcrAPI int getPolyMeshTopologyVariance(PolyMesh* mesh)
+{
+	return mesh ? mesh->getTopologyVariance() : -1;
+}
+
 abcrAPI float* getPolyMeshSample(PolyMesh* mesh, int* size)
 {
 	return mesh ? mesh->get(size) : nullptr;
@@ -90,4 +99,9 @@ abcrAPI float* getPolyMeshSample(PolyMesh* mesh, int* size)
 abcrAPI void getCameraSample(Camera* camera, Matrix4x4* v, CameraParam* p)
 {
 	if (camera) camera->get(v, p);
+}
+
+abcrAPI void RegisterDebugFunc(DebugFunction fp)
+{
+	RegisterDebugFunction(fp);
 }

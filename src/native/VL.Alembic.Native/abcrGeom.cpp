@@ -103,6 +103,7 @@ void abcrGeom::updateTimeSample(chrono_t time, Imath::M44f& transform)
     for (size_t i = 0; i < _children.size(); ++i)
     {
         Imath::M44f m = transform;
+        _children[i]->setInterpolate(_isInterpolate);
         _children[i]->updateTimeSample(time, m);
     }
 }
@@ -114,6 +115,7 @@ XForm::XForm(AbcGeom::IXform xform)
     setMinMaxTime(_xform);
 
     _samplingPtr = _xform.getSchema().getTimeSampling();
+    _numSamples = _xform.getSchema().getNumSamples();
 
     if (_xform.getSchema().isConstant())
     {
@@ -126,13 +128,59 @@ void XForm::set(chrono_t time, Imath::M44f& transform)
 {
     if (!_constant)
     {
-        ISampleSelector ss(time, ISampleSelector::kNearIndex);
+        if (_isInterpolate)
+        {
+            auto prevTime = _samplingPtr->getSampleTime(_lastSampleIndex);
 
-        const Imath::M44d& m = _xform.getSchema().getValue(ss).getMatrix();
-        const double* src = m.getValue();
-        float* dst = _matrix.getValue();
+            ISampleSelector ss0(time, prevTime < time ? ISampleSelector::kFloorIndex : ISampleSelector::kCeilIndex);
+            ISampleSelector ss1(time, prevTime < time ? ISampleSelector::kCeilIndex : ISampleSelector::kFloorIndex);
 
-        for (size_t i = 0; i < 16; ++i) dst[i] = src[i];
+            auto time0 = _samplingPtr->getSampleTime(ss0.getIndex(_samplingPtr, _numSamples));
+            auto time1 = _samplingPtr->getSampleTime(ss1.getIndex(_samplingPtr, _numSamples));
+
+            auto t = (time - time0) / (time1 - time0);
+            Log(("t : " + to_string(t)).c_str());
+
+            const Imath::M44d& m0 = _xform.getSchema().getValue(ss0).getMatrix();
+            const Imath::M44d& m1 = _xform.getSchema().getValue(ss1).getMatrix();
+
+            Imath::V3d t0, t1;
+            Imath::V3d s0, s1;
+            Imath::V3d sh0, sh1;
+            Imath::Quatd r0, r1;
+
+            decomposeMatrix(m0, s0, sh0, r0, t0);
+            decomposeMatrix(m1, s1, sh1, r1, t1);
+
+            Imath::M44d m;
+            m.makeIdentity();
+            m.scale(s0 * (1 - t) + s1 * t);
+            m *= Imath::slerpShortestArc(r0, r1, t).toMatrix44();
+
+            Imath::V3d t2 = t0 * (1 - t) + t1 * t;
+            m[3][0] = t2.x;
+            m[3][1] = t2.y;
+            m[3][2] = t2.z;
+
+            const double* src = m.getValue();
+            float* dst = _matrix.getValue();
+
+            for (size_t i = 0; i < 16; ++i) dst[i] = src[i];
+
+            _lastSampleIndex = ss0.getIndex(_samplingPtr, _numSamples);
+        }
+        else
+        {
+            ISampleSelector ss(time, ISampleSelector::kNearIndex);
+
+            const Imath::M44d& m = _xform.getSchema().getValue(ss).getMatrix();
+            const double* src = m.getValue();
+            float* dst = _matrix.getValue();
+
+            for (size_t i = 0; i < 16; ++i) dst[i] = src[i];
+
+            _lastSampleIndex = ss.getIndex(_samplingPtr, _numSamples);
+        }
     }
 
     transform = _matrix * transform;
@@ -145,6 +193,7 @@ Points::Points(AbcGeom::IPoints points)
     setMinMaxTime(_points);
 
     _samplingPtr = _points.getSchema().getTimeSampling();
+    _numSamples = _points.getSchema().getNumSamples();
 
     if (_points.getSchema().isConstant())
     {
@@ -183,6 +232,7 @@ Curves::Curves(AbcGeom::ICurves curves)
     setMinMaxTime(curves);
 
     _samplingPtr = curves.getSchema().getTimeSampling();
+    _numSamples = curves.getSchema().getNumSamples();
 
     if (curves.getSchema().isConstant())
     {
@@ -259,9 +309,12 @@ PolyMesh::PolyMesh(AbcGeom::IPolyMesh pmesh)
     setMinMaxTime(_polymesh);
 
     _samplingPtr = _polymesh.getSchema().getTimeSampling();
+    _numSamples = _polymesh.getSchema().getNumSamples();
 
     AbcGeom::IPolyMeshSchema mesh = _polymesh.getSchema();
     auto geomParam = _polymesh.getSchema().getArbGeomParams();
+
+    _topologyVariance = mesh.getTopologyVariance();
 
     { // normal valid
         AbcGeom::IN3fGeomParam N = mesh.getNormalsParam();
@@ -555,6 +608,9 @@ Camera::Camera(AbcGeom::ICamera camera)
 {
     _type = AlembicType::CAMERA;
     setMinMaxTime(_camera);
+
+    _samplingPtr = _camera.getSchema().getTimeSampling();
+    _numSamples = _camera.getSchema().getNumSamples();
 
     if (camera.getSchema().isConstant())
     {

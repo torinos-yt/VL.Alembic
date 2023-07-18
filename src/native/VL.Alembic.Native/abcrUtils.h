@@ -10,6 +10,25 @@ void copyCharsWithStride(void* target, const string& source, size_t maxLength);
 
 void computeMeshTangent(const V3f& p, const N3f& n, const V2f& uv, float* t);
 
+void decomposeMatrix(const Imath::M44d& m, Imath::V3d& s, Imath::V3d& sh, Imath::Quatd& r, Imath::V3d& t);
+
+using DebugFunction = void(*)(const char*);
+
+namespace
+{
+    DebugFunction DebugFunc = nullptr;
+}
+
+inline void RegisterDebugFunction(DebugFunction fp)
+{
+    DebugFunc = fp;
+}
+
+inline void Log(const char* msg)
+{
+    if (DebugFunc != nullptr) DebugFunc(msg);
+}
+
 inline N3f computeFaceNormal(const V3f& v0, const V3f& v1, const V3f& v2)
 {
     return -((v1 - v0).cross(v2 - v0)).normalize();

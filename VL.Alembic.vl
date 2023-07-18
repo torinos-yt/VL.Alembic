@@ -13,7 +13,7 @@
         </p:NodeReference>
         <Patch Id="Emf1Kyby2OlPyrOXQtfbwf">
           <Canvas Id="INKT0J5J2TrQO7Ep0ZoOpY" CanvasType="Group">
-            <Node Bounds="358,314,286,308" Id="Laf6R9OkZ3sOGLKdyEO9h3">
+            <Node Bounds="358,314,286,332" Id="Laf6R9OkZ3sOGLKdyEO9h3">
               <p:NodeReference LastCategoryFullName="Primitive" LastDependency="Builtin">
                 <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
                 <Choice Kind="ProcessStatefulRegion" Name="Cache" />
@@ -22,9 +22,9 @@
               <Pin Id="NsuQhxa7SVHPUQPTtK16pi" Name="Force" Kind="InputPin" />
               <Pin Id="DV0kvPBWKkkPAKPoIfpnlF" Name="Dispose Cached Outputs" Kind="InputPin" DefaultValue="True" />
               <Pin Id="Np6dkxQTiD5PNSL1zFReWy" Name="Has Changed" Kind="OutputPin" />
-              <ControlPoint Id="DwTvOFTvTgkP6sETK0KJH6" Bounds="453,321" Alignment="Top" />
-              <ControlPoint Id="FJS08EY1x2YPGGB6kbvHoS" Bounds="476,617" Alignment="Bottom" />
-              <ControlPoint Id="HNxnVYOg8wcL9F8jDD7EDC" Bounds="536,617" Alignment="Bottom" />
+              <ControlPoint Id="DwTvOFTvTgkP6sETK0KJH6" Bounds="453,320" Alignment="Top" />
+              <ControlPoint Id="FJS08EY1x2YPGGB6kbvHoS" Bounds="412,640" Alignment="Bottom" />
+              <ControlPoint Id="HNxnVYOg8wcL9F8jDD7EDC" Bounds="609,640" Alignment="Bottom" />
               <Patch Id="NuoTKdexgUxQJXd6sMEjJ1" ManuallySortedPins="true">
                 <Patch Id="SpGko15x9s8Mf0qUPrG1Rt" Name="Create" ManuallySortedPins="true" />
                 <Patch Id="EPYCjIvjt1rNXHNGBagfle" Name="Then" ManuallySortedPins="true" />
@@ -44,9 +44,9 @@
                   </p:NodeReference>
                   <Pin Id="LmendIHl4N5N5FVtiOQ6Lq" Name="Condition" Kind="InputPin" />
                   <ControlPoint Id="AQB1KCKe8cfQVJsS1Aj2sU" Bounds="474,596" Alignment="Bottom" />
-                  <ControlPoint Id="SdXhNZ0zf35QZZS6qFiHTl" Bounds="475,399" Alignment="Top" />
+                  <ControlPoint Id="SdXhNZ0zf35QZZS6qFiHTl" Bounds="475,398" Alignment="Top" />
                   <ControlPoint Id="HBNEbvqEHX3PIgIjaxrOxX" Bounds="539,596" Alignment="Bottom" />
-                  <ControlPoint Id="M65AWeQI1xVPjFupt6buRe" Bounds="540,399" Alignment="Top" />
+                  <ControlPoint Id="M65AWeQI1xVPjFupt6buRe" Bounds="540,398" Alignment="Top" />
                   <Patch Id="F1e1RmgZF5vOzMt4i5VaRm" ManuallySortedPins="true">
                     <Patch Id="RqV8NIgFwvMN5heSc6fP4I" Name="Create" ManuallySortedPins="true" />
                     <Patch Id="EroxqK7GYblQFZBLrP2GxF" Name="Then" ManuallySortedPins="true" />
@@ -96,10 +96,21 @@
                 </Node>
               </Patch>
             </Node>
-            <ControlPoint Id="R6ekPxgoRCsM173kQqZwDI" Bounds="449,257" />
-            <ControlPoint Id="K0dBGYO9FqVOn10NVgZVht" Bounds="442,667" />
-            <ControlPoint Id="HCkQGLP6rmtMTTkYuWAT42" Bounds="555,683" />
-            <ControlPoint Id="BkXSDSHGQmVMMUhZv65Sqd" Bounds="579,260" />
+            <ControlPoint Id="R6ekPxgoRCsM173kQqZwDI" Bounds="425,255" />
+            <ControlPoint Id="K0dBGYO9FqVOn10NVgZVht" Bounds="377,788" />
+            <ControlPoint Id="HCkQGLP6rmtMTTkYuWAT42" Bounds="617,704" />
+            <ControlPoint Id="BkXSDSHGQmVMMUhZv65Sqd" Bounds="304,257" />
+            <Node Bounds="380,718,79,26" Id="VmJhKNwqdb5Njtk3K6MIA3">
+              <p:NodeReference LastCategoryFullName="Alembic.AlembicScene" LastDependency="VL.Alembic.dll">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="AssemblyCategory" Name="AlembicScene" />
+                <Choice Kind="OperationCallFlag" Name="SetInterpolate" />
+              </p:NodeReference>
+              <Pin Id="PGWyqNAH8TVMUv2iL0bGEK" Name="Input" Kind="StateInputPin" />
+              <Pin Id="S5lBXKTaGDPLRgX0qMiIi2" Name="Interpolate" Kind="InputPin" />
+              <Pin Id="T0DSCNhFWhiOdK931Ud8hi" Name="Output" Kind="StateOutputPin" />
+            </Node>
+            <ControlPoint Id="TyiOPyJBo0MOjZa4OqzMoJ" Bounds="460,683" />
           </Canvas>
           <ProcessDefinition Id="KN3ZCbxFx5oPgacJZAFXyI">
             <Fragment Id="G4HlFwSBo48NIkcqpWFB3W" Patch="DTTNdm2ddWAP6qJBxEDRDT" Enabled="true" />
@@ -112,7 +123,6 @@
           <Link Id="MsqydGQkarOPEgr4QgQb5m" Ids="UQZ1nl0MS3rLDlQhBYel8t,LmendIHl4N5N5FVtiOQ6Lq" />
           <Link Id="VNdQpjK6cEpQPh89i9qdaD" Ids="SdXhNZ0zf35QZZS6qFiHTl,AQB1KCKe8cfQVJsS1Aj2sU" IsFeedback="true" />
           <Link Id="SdL693TctQGQCew84VOkFE" Ids="AQB1KCKe8cfQVJsS1Aj2sU,FJS08EY1x2YPGGB6kbvHoS" />
-          <Link Id="FIJj76U1MjLMnFl9AHkrvW" Ids="FJS08EY1x2YPGGB6kbvHoS,K0dBGYO9FqVOn10NVgZVht" />
           <Link Id="KAiPCwYPzGDPGxJqQEJ9br" Ids="K0dBGYO9FqVOn10NVgZVht,TNt8Dvm7iy5LuFUaNE2FdO" IsHidden="true" />
           <Link Id="DfpX0RQCLPrLCNv8oyWC3B" Ids="Am9NeZsJMHLLhlqFXE9SBG,AQB1KCKe8cfQVJsS1Aj2sU" />
           <Link Id="DNjaT6tilORLO1q2Hax1JI" Ids="M65AWeQI1xVPjFupt6buRe,HBNEbvqEHX3PIgIjaxrOxX" IsFeedback="true" />
@@ -126,13 +136,18 @@
           <Link Id="TomGx0Ya6ckMb7FULi8gzy" Ids="UAU5BRTak4pLHqyKPJctDe,BkXSDSHGQmVMMUhZv65Sqd" IsHidden="true" />
           <Link Id="BVF9A903fSMOOcRYj96sAn" Ids="Un6Y2eN0lgGM26FeDoJ88V,IF0SS10BY5IM8ZmPUMb7qr" />
           <Link Id="Jmst5V3CvQmLFY8yqVFyLI" Ids="PfQ3y54J1ijOoeTAMAEw4G,SdtMg8uHuWXMQ0UAiN6Brb" />
+          <Link Id="CcLZsL2EUfOPeYPKGOULWU" Ids="FJS08EY1x2YPGGB6kbvHoS,PGWyqNAH8TVMUv2iL0bGEK" />
+          <Link Id="RFWyPkD5HOcMa8LRpXq0Kg" Ids="T0DSCNhFWhiOdK931Ud8hi,K0dBGYO9FqVOn10NVgZVht" />
+          <Link Id="ItCjkKiCbSsQSLaw19zy3c" Ids="TyiOPyJBo0MOjZa4OqzMoJ,S5lBXKTaGDPLRgX0qMiIi2" />
+          <Link Id="MmxmOb5lWerLrzb3RRLR9y" Ids="NXLr8ttINLBOojRyIIyUMq,TyiOPyJBo0MOjZa4OqzMoJ" IsHidden="true" />
           <Patch Id="DTTNdm2ddWAP6qJBxEDRDT" Name="Create" />
-          <Patch Id="FRphY0R1WCKNaj3aAyBP3j" Name="Update">
+          <Patch Id="FRphY0R1WCKNaj3aAyBP3j" Name="Update" ManuallySortedPins="true">
             <Pin Id="Ro4LqJKYWRTOK5ktP8HQbm" Name="Path" Kind="InputPin" Bounds="449,254">
               <p:TypeAnnotation LastCategoryFullName="IO" LastDependency="VL.CoreLib.vl">
                 <Choice Kind="TypeFlag" Name="Path" />
               </p:TypeAnnotation>
             </Pin>
+            <Pin Id="NXLr8ttINLBOojRyIIyUMq" Name="Interpolate Sample" Kind="InputPin" Bounds="506,251" />
             <Pin Id="UAU5BRTak4pLHqyKPJctDe" Name="Reload" Kind="InputPin" Bounds="563,265" />
             <Pin Id="TNt8Dvm7iy5LuFUaNE2FdO" Name="Output" Kind="OutputPin" Bounds="443,604" />
             <Pin Id="NdHf3AqYsSfLrKRnU1EYDB" Name="Names" Kind="OutputPin" Bounds="546,595" />
@@ -524,6 +539,34 @@
                 <Pin Id="ETRRQYKvl19LNRx46gaf9L" Name="Time Range" Kind="OutputPin" Bounds="631,508" />
               </Patch>
             </Node>
+            <!--
+
+    ************************ Transform ************************
+
+-->
+            <Node Name="Transform" Bounds="554,545,112,80" Id="LUZhUUgYlrGQDIoXwoBI6c">
+              <p:NodeReference>
+                <Choice Kind="OperationDefinition" Name="Operation" />
+                <CategoryReference Kind="Category" Name="Primitive" />
+              </p:NodeReference>
+              <p:HideCategory p:Type="Boolean">false</p:HideCategory>
+              <Patch Id="PCJtuBy7QUEL5J0YoWlspw">
+                <Node Bounds="566,574,66,26" AutoConnect="true" Id="Ea69myoQyb7QSgEjzPcN0a">
+                  <p:NodeReference LastCategoryFullName="Alembic.AlembicScene" LastDependency="VL.Alembic.dll">
+                    <Choice Kind="OperationNode" Name="Transform" />
+                    <FullNameCategoryReference ID="Alembic.AlembicScene" />
+                  </p:NodeReference>
+                  <Pin Id="R1ljL4Sn72kPTon8IBnfYB" Name="Input" Kind="StateInputPin" />
+                  <Pin Id="FV6PbWi2ssGOSfWJFcbeco" Name="Name" Kind="InputPin" />
+                  <Pin Id="SMNwWsv16AXNeAUEJHAmQS" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="DpZFgBriMEiOvu1moMad3a" Name="Result" Kind="OutputPin" />
+                </Node>
+                <Pin Id="Rqpv2RM5NqPLQrFhArmKCJ" Name="Input" Kind="InputPin" />
+                <Pin Id="C8DT2ay2wFdN3jQ6fOcl9e" Name="Name" Kind="InputPin" />
+                <Pin Id="PLUYiySH9E3O6ynJOuQhsj" Name="Output" Kind="OutputPin" />
+                <Pin Id="N0ybpXEPN7dPTSDnc66pt6" Name="Result" Kind="OutputPin" />
+              </Patch>
+            </Node>
           </Canvas>
           <ProcessDefinition Id="HIAZWM7JbUeNKVc1TgF7Gw" IsHidden="true">
             <Fragment Id="EqfTJ1BtMNiOCH0k76oAl9" Patch="Shcb8z6Bl91NE07KCTFmCo" Enabled="true" />
@@ -534,6 +577,7 @@
             <Fragment Id="DS3qJ6cjJjDLsA7CmJ0uqs" Patch="H0nXFgKN7FoMCGwQucC70z" />
             <Fragment Id="CNrnASYPMwxLrBnYh3xZqE" Patch="QmWnLRTgsBGL2mmpj49R7t" />
             <Fragment Id="LoHZpCieltZPxPNb3zyHkq" Patch="IhW7h4bh9QROUbn8ttcBIY" />
+            <Fragment Id="QE1S67enNVwLZq2Bi9v17g" Patch="LUZhUUgYlrGQDIoXwoBI6c" />
           </ProcessDefinition>
         </Patch>
       </Node>
@@ -2478,7 +2522,7 @@
                     <Pin Id="E2SUadPjk5zNg90LlnLuFh" Name="Has Changed" Kind="OutputPin" />
                   </Node>
                   <Node Bounds="495,555,117,19" Id="ThOFsGCOtEtNyq5FKJcYYY">
-                    <p:NodeReference LastCategoryFullName="Stride.Rendering.ComputeShaders" LastDependency="VL.Stride.Rendering.EffectShaderNodes (C:\Users\iryut\AppData\Local\vvvv\gamma\nugets\VL.Alembic)">
+                    <p:NodeReference LastCategoryFullName="Stride.Rendering.ComputeShaders" LastDependency="VL.Stride.Rendering.EffectShaderNodes (D:\Documents\Dev\VL.Alembic)">
                       <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                       <Choice Kind="ProcessNode" Name="VectorToMatrixShader" />
                     </p:NodeReference>

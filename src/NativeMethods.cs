@@ -6,6 +6,8 @@ using Stride.Graphics;
 
 namespace Alembic
 {
+    internal delegate void DebugLogDelegate(string str);
+
     [SuppressUnmanagedCodeSecurity]
     internal static class NativeMethods
     {
@@ -36,6 +38,9 @@ namespace Alembic
 
         [DllImport("VL.Alembic.Native.dll")]
         public static extern void updateTime(AlembicScene self, float time);
+
+        [DllImport("VL.Alembic.Native.dll")]
+        public static extern void setInterpolate(AlembicScene self, [MarshalAs(UnmanagedType.U1)] bool interpolate);
 
         #endregion // AlembicScene
 
@@ -80,6 +85,9 @@ namespace Alembic
         public static extern VertexLayout getPolyMeshLayout(IntPtr self);
 
         [DllImport("VL.Alembic.Native.dll")]
+        public static extern VertexLayout getPolyMeshTopologyVariance(IntPtr self);
+
+        [DllImport("VL.Alembic.Native.dll")]
         public static extern IntPtr getPolyMeshSample(IntPtr self, out int size);
 
         #endregion // PolyMesh
@@ -90,5 +98,8 @@ namespace Alembic
         public static extern void getCameraSample(IntPtr self, out Matrix v, out CameraParam p);
 
         #endregion // Camera
+
+        [DllImport("VL.Alembic.Native.dll")]
+        public static extern void RegisterDebugFunc(DebugLogDelegate fp);
     }
 }

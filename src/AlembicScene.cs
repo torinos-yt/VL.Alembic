@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Win32.SafeHandles;
+using Stride.Core.Mathematics;
 using VL.Lib.Mathematics;
 
 namespace Alembic
@@ -7,6 +8,13 @@ namespace Alembic
     public sealed partial class AlembicScene : SafeHandleZeroOrMinusOneIsInvalid
     {
         public AlembicScene() : base(true) {}
+
+        static void debugLogFunc(string str) => Console.WriteLine(str);
+
+        static AlembicScene()
+        {
+            NativeMethods.RegisterDebugFunc(debugLogFunc);
+        }
 
         protected override bool ReleaseHandle()
         {
@@ -54,7 +62,11 @@ namespace Alembic
 
         public GeomType Type(string name) => GetGeom(name).Type;
 
+        public Matrix Transform(string name) => NativeMethods.getTransform(GetGeom(name).Self);
+
         public void SetTime(float time) => NativeMethods.updateTime(this, time);
+
+        public void SetInterpolate(bool interpolate) => NativeMethods.setInterpolate(this, interpolate);
 
 
         AlembicGeom GetGeom(string name) => (AlembicGeom)NativeMethods.getGeom(this, name);
