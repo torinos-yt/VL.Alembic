@@ -85,7 +85,7 @@ namespace Alembic
         public static extern VertexLayout getPolyMeshLayout(IntPtr self);
 
         [DllImport("VL.Alembic.Native.dll")]
-        public static extern VertexLayout getPolyMeshTopologyVariance(IntPtr self);
+        public static extern MeshTopologyVariance getPolyMeshTopologyVariance(IntPtr self);
 
         [DllImport("VL.Alembic.Native.dll")]
         public static extern IntPtr getPolyMeshSample(IntPtr self, out int size);
