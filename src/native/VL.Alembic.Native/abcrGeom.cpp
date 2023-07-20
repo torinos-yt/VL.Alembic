@@ -491,25 +491,25 @@ void PolyMesh::set(chrono_t time, Imath::M44f& transform)
 
         if (_hasNormal)
         {
-            _normSample  = N.getExpandedValue(ss0);
-            _normSample2 = N.getExpandedValue(ss1);
+            _normSample  = N.getIndexedValue(ss0);
+            _normSample2 = N.getIndexedValue(ss1);
         }
 
         if (_hasUV)
         {
-            _uvSample  = UV.getExpandedValue(ss0);
-            _uvSample2 = UV.getExpandedValue(ss1);
+            _uvSample  = UV.getIndexedValue(ss0);
+            _uvSample2 = UV.getIndexedValue(ss1);
         }
 
         if (_hasRGB)
         {
-            _rgbSample  = _rgbParam.getExpandedValue(ss0);
-            _rgbSample2 = _rgbParam.getExpandedValue(ss1);
+            _rgbSample  = _rgbParam.getIndexedValue(ss0);
+            _rgbSample2 = _rgbParam.getIndexedValue(ss1);
         }
         else if (_hasRGBA)
         {
-            _rgbaSample  = _rgbaParam.getExpandedValue(ss0);
-            _rgbaSample2 = _rgbaParam.getExpandedValue(ss1);
+            _rgbaSample  = _rgbaParam.getIndexedValue(ss0);
+            _rgbaSample2 = _rgbaParam.getIndexedValue(ss1);
         }
 
         _lastSampleIndex = ss0.getIndex(_samplingPtr, _numSamples);
@@ -518,12 +518,13 @@ void PolyMesh::set(chrono_t time, Imath::M44f& transform)
     {
         ISampleSelector ss(time, ISampleSelector::kNearIndex);
 
-        mesh.get(_meshSample, ss);
-        if (_hasNormal) _normSample = N.getExpandedValue(ss);
-        if (_hasUV) _uvSample = UV.getExpandedValue(ss);
 
-        if (_hasRGB) _rgbSample = _rgbParam.getExpandedValue(ss);
-        else if (_hasRGBA) _rgbaSample = _rgbaParam.getExpandedValue(ss);
+        mesh.get(_meshSample, ss);
+        if (_hasNormal) _normSample = N.getIndexedValue(ss);
+        if (_hasUV) _uvSample = UV.getIndexedValue(ss);
+
+        if (_hasRGB) _rgbSample = _rgbParam.getIndexedValue(ss);
+        else if (_hasRGBA) _rgbaSample = _rgbaParam.getIndexedValue(ss);
 
         _lastSampleIndex = ss.getIndex(_samplingPtr, _numSamples);
     }
@@ -544,7 +545,64 @@ float* PolyMesh::get(int* size)
     if (_hasUV) m_uvs  = _uvSample.getVals();
 
     auto N = _polymesh.getSchema().getNormalsParam();
-    bool isIndexedNormal = N.getScope() == 2;
+    int normalIndexType = 0;
+    if (_hasNormal)
+    {
+        if (N.isIndexed() && _normSample.getIndices()->size() == m_indices->size())
+            normalIndexType = 0; // use normal index
+        else if (m_norms->size() == m_points->size())
+            normalIndexType = 1; // use vertex index
+        else if (m_norms->size() == m_indices->size())
+            normalIndexType = 2;
+        else
+            _hasNormal = false; // invalid value
+    }
+
+    auto UV = _polymesh.getSchema().getUVsParam();
+    int uvIndexType = 0;
+    if (_hasUV)
+    {
+        if (UV.isIndexed() && _uvSample.getIndices()->size() == m_indices->size())
+            uvIndexType = 0; // use normal index
+        else if (m_uvs->size() == m_points->size())
+            uvIndexType = 1; // use vertex index
+        else if (m_uvs->size() == m_indices->size())
+            uvIndexType = 2;
+        else
+            _hasUV = false; // invalid value
+    }
+
+    int rgbIndexType = 0;
+    if (_hasRGB)
+    {
+        if (_rgbSample.isIndexed() && _rgbSample.getIndices()->size() == m_indices->size())
+            rgbIndexType = 0; // use normal index
+        else if (_rgbSample.getVals()->size() == m_points->size())
+            rgbIndexType = 1; // use vertex index
+        else if (_rgbSample.getVals()->size() == m_indices->size())
+            rgbIndexType = 2;
+        else
+        {
+            _hasRGB = false; // invalid value
+            _layout = PosNormTex;
+        }
+    }
+
+    int rgbaIndexType = 0;
+    if (_hasRGBA)
+    {
+        if (_rgbaSample.isIndexed() && _rgbaSample.getIndices()->size() == m_indices->size())
+            rgbaIndexType = 0; // use normal index
+        else if (_rgbaSample.getVals()->size() == m_points->size())
+            rgbaIndexType = 1; // use vertex index
+        else if (_rgbaSample.getVals()->size() == m_indices->size())
+            rgbaIndexType = 2;
+        else
+        {
+            _hasRGBA = false; // invalid value
+            _layout = PosNormTex;
+        }
+    }
 
     if (_isInterpolate)
     {
@@ -620,56 +678,138 @@ float* PolyMesh::get(int* size)
 
         const int32_t* indices = m_indices->get();
 
+        const int32_t* normIndices = nullptr;
+        if (_hasNormal)
+        {
+            if (normalIndexType == 0) normIndices = (int32_t*)_normSample.getIndices()->get();
+            else if (normalIndexType == 1) normIndices = indices;
+        }
+
+        const int32_t* uvIndices = nullptr;
+        if (_hasUV)
+        {
+            if (uvIndexType == 0) uvIndices = (int32_t*)_uvSample.getIndices()->get();
+            else if (uvIndexType == 1) uvIndices = indices;
+        }
+
         float* stream = _geom;
 
         if (_hasRGB)
         {
             const auto cols_ptr = _rgbSample.getVals();
-            const auto cols_ptr2 = _rgbSample2.getVals();
             auto cdCount = cols_ptr->size();
             bool isIndexedColor = cdCount == m_points->size();
-
             const C3f* cols = cols_ptr->get();
-            const C3f* cols2 = cols_ptr2->get();
+
+            const C3f* cols2 = nullptr;
+            if (_isInterpolate)
+            {
+                cols2 = _rgbSample2.getVals()->get();
+            }
+
             for (size_t j = 0; j < m_triangles.size(); ++j)
             {
                 tri& t = m_triangles[j];
 
                 V3f v0 = points[indices[t[0]]];
-                V2f uv0 = _hasUV ? uvs[t[0]] : V2f(0);
                 C3f col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 V3f v1 = points[indices[t[1]]];
-                V2f uv1 = _hasUV ? uvs[t[1]] : V2f(0);
                 C3f col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 V3f v2 = points[indices[t[2]]];
-                V2f uv2 = _hasUV ? uvs[t[2]] : V2f(0);
                 C3f col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
+
+                V2f uv0, uv1, uv2;
+                if (!_hasUV)
+                {
+                    uv0 = uv1 = uv2 = V2f(0);
+                }
+                else
+                {
+                    if (uvIndexType < 2)
+                    {
+                        uv0 = uvs[uvIndices[t[0]]];
+                        uv1 = uvs[uvIndices[t[1]]];
+                        uv2 = uvs[uvIndices[t[2]]];
+                    }
+                    else
+                    {
+                        uv0 = uvs[t[0]];
+                        uv1 = uvs[t[1]];
+                        uv2 = uvs[t[2]];
+                    }
+                }
                 
-                const N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                N3f n0 = _hasNormal ? norms[t[0]] : faceNormal;
-                N3f n1 = _hasNormal ? norms[t[1]] : faceNormal;
-                N3f n2 = _hasNormal ? norms[t[2]] : faceNormal;
+                N3f n0, n1, n2;
+                if (!_hasNormal)
+                {
+                    N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                    n0 = n1 = n2 = faceNormal;
+                }
+                else
+                {
+                    if (normalIndexType < 2)
+                    {
+                        n0 = norms[normIndices[t[0]]];
+                        n1 = norms[normIndices[t[1]]];
+                        n2 = norms[normIndices[t[2]]];
+                    }
+                    else
+                    {
+                        n0 = norms[t[0]];
+                        n1 = norms[t[1]];
+                        n2 = norms[t[2]];
+                    }
+                }
 
                 if (_isInterpolate)
                 {
                     v0 += (points2[indices[t[0]]] - v0) * _t;
-                    uv0 += _hasUV ? (uvs2[t[0]] - uv0) * _t : V2f(0);
                     col0 += isIndexedColor ? (cols2[indices[t[0]]] - col0) * _t : (cols2[t[0]] - col0) * _t;
 
                     v1 += (points2[indices[t[1]]] - v1) * _t;
-                    uv2 += _hasUV ? (uvs2[t[1]] - uv1) * _t : V2f(0);
                     col1 += isIndexedColor ? (cols2[indices[t[1]]] - col1) * _t : (cols2[t[1]] - col1) * _t;
 
                     v2 += (points2[indices[t[2]]] - v2) * _t;
-                    uv2 += _hasUV ? (uvs2[t[2]] - uv2) * _t : V2f(0);
                     col2 += isIndexedColor ? (cols2[indices[t[2]]] - col2) * _t : (cols2[t[2]] - col2) * _t;
 
-                    const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                    n0 = _hasNormal ? n0 + (norms2[t[0]] - n0) * _t : faceNormal2;
-                    n1 = _hasNormal ? n1 + (norms2[t[1]] - n1) * _t : faceNormal2;
-                    n2 = _hasNormal ? n2 + (norms2[t[2]] - n2) * _t : faceNormal2;
+                    if (_hasUV)
+                    {
+                        if (uvIndexType < 2)
+                        {
+                            uv0 += (uvs2[uvIndices[t[0]]] - uv0) * _t;
+                            uv1 += (uvs2[uvIndices[t[1]]] - uv1) * _t;
+                            uv2 += (uvs2[uvIndices[t[2]]] - uv2) * _t;
+                        }
+                        else
+                        {
+                            uv0 += (uvs2[t[0]] - uv0) * _t;
+                            uv1 += (uvs2[t[1]] - uv1) * _t;
+                            uv2 += (uvs2[t[2]] - uv2) * _t;
+                        }
+                    }
+
+                    if (!_hasNormal)
+                    {
+                        const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                        n0 = n1 = n2 = faceNormal2;
+                    }
+                    else
+                    {
+                        if (normalIndexType < 2)
+                        {
+                            n0 += (norms2[normIndices[t[0]]] - n0) * _t;
+                            n1 += (norms2[normIndices[t[1]]] - n1) * _t;
+                            n2 += (norms2[normIndices[t[2]]] - n2) * _t;
+                        }
+                        else
+                        {
+                            n0 += (norms2[t[0]] - n0) * _t;
+                            n1 += (norms2[t[1]] - n1) * _t;
+                            n2 += (norms2[t[2]] - n2) * _t;
+                        }
+                    }
                 }
 
                 copyTo(stream, v0);
@@ -695,46 +835,112 @@ float* PolyMesh::get(int* size)
             bool isIndexedColor = cdCount == m_points->size();
 
             const C4f* cols = _rgbaSample.getVals()->get();
-            const C4f* cols2 = _rgbaSample2.getVals()->get();
+
+            const C4f* cols2 = nullptr;
+            if(_isInterpolate) cols2 = _rgbaSample2.getVals()->get();
             for (size_t j = 0; j < m_triangles.size(); ++j)
             {
                 tri& t = m_triangles[j];
 
                 V3f v0 = points[indices[t[0]]];
-                V2f uv0 = _hasUV ? uvs[t[0]] : V2f(0);
                 C4f col0 = isIndexedColor ? cols[indices[t[0]]] : cols[t[0]];
 
                 V3f v1 = points[indices[t[1]]];
-                V2f uv1 = _hasUV ? uvs[t[1]] : V2f(0);
                 C4f col1 = isIndexedColor ? cols[indices[t[1]]] : cols[t[1]];
 
                 V3f v2 = points[indices[t[2]]];
-                V2f uv2 = _hasUV ? uvs[t[2]] : V2f(0);
                 C4f col2 = isIndexedColor ? cols[indices[t[2]]] : cols[t[2]];
 
-                N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                N3f n0 = _hasNormal ? norms[t[0]] : faceNormal;
-                N3f n1 = _hasNormal ? norms[t[1]] : faceNormal;
-                N3f n2 = _hasNormal ? norms[t[2]] : faceNormal;
+                V2f uv0, uv1, uv2;
+                if (!_hasUV)
+                {
+                    uv0 = uv1 = uv2 = V2f(0);
+                }
+                else
+                {
+                    if (uvIndexType < 2)
+                    {
+                        uv0 = uvs[uvIndices[t[0]]];
+                        uv1 = uvs[uvIndices[t[1]]];
+                        uv2 = uvs[uvIndices[t[2]]];
+                    }
+                    else
+                    {
+                        uv0 = uvs[t[0]];
+                        uv1 = uvs[t[1]];
+                        uv2 = uvs[t[2]];
+                    }
+                }
+
+                N3f n0, n1, n2;
+                if (!_hasNormal)
+                {
+                    N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                    n0 = n1 = n2 = faceNormal;
+                }
+                else
+                {
+                    if (normalIndexType < 2)
+                    {
+                        n0 = norms[normIndices[t[0]]];
+                        n1 = norms[normIndices[t[1]]];
+                        n2 = norms[normIndices[t[2]]];
+                    }
+                    else
+                    {
+                        n0 = norms[t[0]];
+                        n1 = norms[t[1]];
+                        n2 = norms[t[2]];
+                    }
+                }
 
                 if (_isInterpolate)
                 {
                     v0 += (points2[indices[t[0]]] - v0) * _t;
-                    uv0 += _hasUV ? (uvs2[t[0]] - uv0) * _t : V2f(0);
                     col0 += isIndexedColor ? (cols2[indices[t[0]]] - col0) * _t : (cols2[t[0]] - col0) * _t;
 
                     v1 += (points2[indices[t[1]]] - v1) * _t;
-                    uv2 += _hasUV ? (uvs2[t[1]] - uv1) * _t : V2f(0);
                     col1 += isIndexedColor ? (cols2[indices[t[1]]] - col1) * _t : (cols2[t[1]] - col1) * _t;
 
-                    v2 += (points2[indices[t[2]]] - v1) * _t;
-                    uv2 += _hasUV ? (uvs2[t[2]] - uv1) * _t : V2f(0);
+                    v2 += (points2[indices[t[2]]] - v2) * _t;
                     col2 += isIndexedColor ? (cols2[indices[t[2]]] - col2) * _t : (cols2[t[2]] - col2) * _t;
 
-                    const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                    n0 = _hasNormal ? n0 + (norms2[t[0]] - n0) * _t : faceNormal2;
-                    n1 = _hasNormal ? n1 + (norms2[t[1]] - n1) * _t : faceNormal2;
-                    n2 = _hasNormal ? n2 + (norms2[t[2]] - n2) * _t : faceNormal2;
+                    if (_hasUV)
+                    {
+                        if (uvIndexType < 2)
+                        {
+                            uv0 += (uvs2[uvIndices[t[0]]] - uv0) * _t;
+                            uv1 += (uvs2[uvIndices[t[1]]] - uv1) * _t;
+                            uv2 += (uvs2[uvIndices[t[2]]] - uv2) * _t;
+                        }
+                        else
+                        {
+                            uv0 += (uvs2[t[0]] - uv0) * _t;
+                            uv1 += (uvs2[t[1]] - uv1) * _t;
+                            uv2 += (uvs2[t[2]] - uv2) * _t;
+                        }
+                    }
+
+                    if (!_hasNormal)
+                    {
+                        const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                        n0 = n1 = n2 = faceNormal2;
+                    }
+                    else
+                    {
+                        if (normalIndexType < 2)
+                        {
+                            n0 += (norms2[normIndices[t[0]]] - n0) * _t;
+                            n1 += (norms2[normIndices[t[1]]] - n1) * _t;
+                            n2 += (norms2[normIndices[t[2]]] - n2) * _t;
+                        }
+                        else
+                        {
+                            n0 += (norms2[t[0]] - n0) * _t;
+                            n1 += (norms2[t[1]] - n1) * _t;
+                            n2 += (norms2[t[2]] - n2) * _t;
+                        }
+                    }
                 }
 
                 copyTo(stream, v0);
@@ -760,34 +966,94 @@ float* PolyMesh::get(int* size)
                 tri& t = m_triangles[j];
 
                 V3f v0 = points[indices[t[0]]];
-                V2f uv0 = _hasUV ? uvs[t[0]] : V2f(0);
-
                 V3f v1 = points[indices[t[1]]];
-                V2f uv1 = _hasUV ? uvs[t[1]] : V2f(0);
-
                 V3f v2 = points[indices[t[2]]];
-                V2f uv2 = _hasUV ? uvs[t[2]] : V2f(0);
 
-                N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                N3f n0 = _hasNormal ? (isIndexedNormal ? norms[indices[t[0]]] : norms[t[0]]) : faceNormal;
-                N3f n1 = _hasNormal ? (isIndexedNormal ? norms[indices[t[1]]] : norms[t[2]]) : faceNormal;
-                N3f n2 = _hasNormal ? (isIndexedNormal ? norms[indices[t[2]]] : norms[t[2]]) : faceNormal;
+                V2f uv0, uv1, uv2;
+                if (!_hasUV)
+                {
+                    uv0 = uv1 = uv2 = V2f(0);
+                }
+                else
+                {
+                    if (uvIndexType < 2)
+                    {
+                        uv0 = uvs[uvIndices[t[0]]];
+                        uv1 = uvs[uvIndices[t[1]]];
+                        uv2 = uvs[uvIndices[t[2]]];
+                    }
+                    else
+                    {
+                        uv0 = uvs[t[0]];
+                        uv1 = uvs[t[1]];
+                        uv2 = uvs[t[2]];
+                    }
+                }
+
+                N3f n0, n1, n2;
+                if (!_hasNormal)
+                {
+                    N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                    n0 = n1 = n2 = faceNormal;
+                }
+                else
+                {
+                    if (normalIndexType < 2)
+                    {
+                        n0 = norms[normIndices[t[0]]];
+                        n1 = norms[normIndices[t[1]]];
+                        n2 = norms[normIndices[t[2]]];
+                    }
+                    else
+                    {
+                        n0 = norms[t[0]];
+                        n1 = norms[t[1]];
+                        n2 = norms[t[2]];
+                    }
+                }
 
                 if (_isInterpolate)
                 {
                     v0 += (points2[indices[t[0]]] - v0) * _t;
-                    uv0 += _hasUV ? (uvs2[t[0]] - uv0) * _t : V2f(0);
-
                     v1 += (points2[indices[t[1]]] - v1) * _t;
-                    uv2 += _hasUV ? (uvs2[t[1]] - uv1) * _t : V2f(0);
-
                     v2 += (points2[indices[t[2]]] - v2) * _t;
-                    uv2 += _hasUV ? (uvs2[t[2]] - uv2) * _t : V2f(0);
 
-                    const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                    n0 = _hasNormal ? n0 + ((isIndexedNormal ? norms2[indices[t[0]]] : norms2[t[0]]) - n0) * _t : faceNormal2;
-                    n1 = _hasNormal ? n1 + ((isIndexedNormal ? norms2[indices[t[1]]] : norms2[t[1]]) - n1) * _t : faceNormal2;
-                    n2 = _hasNormal ? n2 + ((isIndexedNormal ? norms2[indices[t[2]]] : norms2[t[2]]) - n2) * _t : faceNormal2;
+                    if (_hasUV)
+                    {
+                        if (uvIndexType < 2)
+                        {
+                            uv0 += (uvs2[uvIndices[t[0]]] - uv0) * _t;
+                            uv1 += (uvs2[uvIndices[t[1]]] - uv1) * _t;
+                            uv2 += (uvs2[uvIndices[t[2]]] - uv2) * _t;
+                        }
+                        else
+                        {
+                            uv0 += (uvs2[t[0]] - uv0) * _t;
+                            uv1 += (uvs2[t[1]] - uv1) * _t;
+                            uv2 += (uvs2[t[2]] - uv2) * _t;
+                        }
+                    }
+
+                    if (!_hasNormal)
+                    {
+                        const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
+                        n0 = n1 = n2 = faceNormal2;
+                    }
+                    else
+                    {
+                        if (normalIndexType < 2)
+                        {
+                            n0 += (norms2[normIndices[t[0]]] - n0) * _t;
+                            n1 += (norms2[normIndices[t[1]]] - n1) * _t;
+                            n2 += (norms2[normIndices[t[2]]] - n2) * _t;
+                        }
+                        else
+                        {
+                            n0 += (norms2[t[0]] - n0) * _t;
+                            n1 += (norms2[t[1]] - n1) * _t;
+                            n2 += (norms2[t[2]] - n2) * _t;
+                        }
+                    }
                 }
 
                 copyTo(stream, v0);
