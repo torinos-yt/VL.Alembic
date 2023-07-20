@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>VL.Alembic</id>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
     <title>VL.Alembic</title>
     <authors>torinos</authors>
     <owners>torinos</owners>
