@@ -543,6 +543,9 @@ float* PolyMesh::get(int* size)
     V2fArraySamplePtr m_uvs, m_uvs2;
     if (_hasUV) m_uvs  = _uvSample.getVals();
 
+    auto N = _polymesh.getSchema().getNormalsParam();
+    bool isIndexedNormal = N.getScope() == 2;
+
     if (_isInterpolate)
     {
         m_points2 = _meshSample2.getPositions();
@@ -766,9 +769,9 @@ float* PolyMesh::get(int* size)
                 V2f uv2 = _hasUV ? uvs[t[2]] : V2f(0);
 
                 N3f faceNormal = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                N3f n0 = _hasNormal ? norms[t[0]] : faceNormal;
-                N3f n1 = _hasNormal ? norms[t[1]] : faceNormal;
-                N3f n2 = _hasNormal ? norms[t[2]] : faceNormal;
+                N3f n0 = _hasNormal ? (isIndexedNormal ? norms[indices[t[0]]] : norms[t[0]]) : faceNormal;
+                N3f n1 = _hasNormal ? (isIndexedNormal ? norms[indices[t[1]]] : norms[t[2]]) : faceNormal;
+                N3f n2 = _hasNormal ? (isIndexedNormal ? norms[indices[t[2]]] : norms[t[2]]) : faceNormal;
 
                 if (_isInterpolate)
                 {
@@ -782,9 +785,9 @@ float* PolyMesh::get(int* size)
                     uv2 += _hasUV ? (uvs2[t[2]] - uv2) * _t : V2f(0);
 
                     const N3f faceNormal2 = _hasNormal ? N3f(0) : computeFaceNormal(v0, v1, v2);
-                    n0 = _hasNormal ? n0 + (norms2[t[0]] - n0) * _t : faceNormal2;
-                    n1 = _hasNormal ? n1 + (norms2[t[1]] - n1) * _t : faceNormal2;
-                    n2 = _hasNormal ? n2 + (norms2[t[2]] - n2) * _t : faceNormal2;
+                    n0 = _hasNormal ? n0 + ((isIndexedNormal ? norms2[indices[t[0]]] : norms2[t[0]]) - n0) * _t : faceNormal2;
+                    n1 = _hasNormal ? n1 + ((isIndexedNormal ? norms2[indices[t[1]]] : norms2[t[1]]) - n1) * _t : faceNormal2;
+                    n2 = _hasNormal ? n2 + ((isIndexedNormal ? norms2[indices[t[2]]] : norms2[t[2]]) - n2) * _t : faceNormal2;
                 }
 
                 copyTo(stream, v0);
