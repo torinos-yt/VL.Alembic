@@ -85,6 +85,7 @@
             <Pin Id="DHLqOWSlP7HQaAtWgarJuz" Name="Enabled" Kind="InputPin" />
             <Pin Id="SbJDNzqBVYrQLooj0YztlU" Name="Present Interval" Kind="InputPin" />
             <Pin Id="JNO7gPwGFTqPzhMWO2ZErf" Name="Output" Kind="OutputPin" />
+            <Pin Id="PS1feASk6FuM0ybBZeq43K" Name="Compositor" Kind="OutputPin" />
             <Pin Id="K02hMP2aI5rO4tvGSNHvvs" Name="Client Bounds" Kind="OutputPin" />
             <Pin Id="DfjX4gm30umMLIyA8wEx1a" Name="Input Source" Kind="OutputPin" />
           </Node>
@@ -325,14 +326,6 @@
               <Choice Kind="TypeFlag" Name="Path" />
             </p:TypeAnnotation>
           </Pad>
-          <Node Bounds="1573,920,22,19" Id="G9ol504P7EXPFauDoP9SMp">
-            <p:NodeReference LastCategoryFullName="Math" LastDependency="VL.CoreLib.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <Choice Kind="OperationCallFlag" Name="- (Negate)" />
-            </p:NodeReference>
-            <Pin Id="GYqv7mWXDAVNSWke9gE91G" Name="Input" Kind="InputPin" />
-            <Pin Id="RHUKgQayiLDNsunV8MGUlL" Name="Output" Kind="OutputPin" />
-          </Node>
           <Node Bounds="61,549,71,19" Id="OSZeZpaSMDtNlZThxlszkQ">
             <p:NodeReference LastCategoryFullName="Alembic" LastDependency="VL.Alembic.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />

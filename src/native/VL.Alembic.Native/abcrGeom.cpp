@@ -1121,6 +1121,31 @@ int PolyMesh::getMaxVertexCount()
     return _maxVertexCount;
 }
 
+BoundingBox PolyMesh::getMaxSizeBoudingBox()
+{
+    if (!_maxBounds.isEmpty()) return toVVVV(_maxBounds);
+
+    auto& mesh = _polymesh.getSchema();
+    auto sampleCount = _numSamples;
+
+    for (size_t i = 0; i < sampleCount; ++i)
+    {
+        AbcGeom::IPolyMeshSchema::Sample meshSample;
+        mesh.get(meshSample, i);
+        auto bound = meshSample.getSelfBounds();
+
+        _maxBounds.min.x = min(_maxBounds.min.x, bound.min.x);
+        _maxBounds.min.y = min(_maxBounds.min.y, bound.min.y);
+        _maxBounds.min.z = min(_maxBounds.min.z, bound.min.z);
+
+        _maxBounds.max.x = max(_maxBounds.max.x, bound.max.x);
+        _maxBounds.max.y = max(_maxBounds.max.y, bound.max.y);
+        _maxBounds.max.z = max(_maxBounds.max.z, bound.max.z);
+    }
+
+    return toVVVV(_maxBounds);
+}
+
 Camera::Camera(AbcGeom::ICamera camera)
     : abcrGeom(camera), _camera(camera), _view(), _proj()
 {

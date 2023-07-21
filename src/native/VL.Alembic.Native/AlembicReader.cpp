@@ -106,6 +106,11 @@ abcrAPI int getPolyMeshMaxVertexCount(PolyMesh* mesh)
 	return mesh ? mesh->getMaxVertexCount() : -1;
 }
 
+abcrAPI BoundingBox getPolyMeshMaxSizeBoudingBox(PolyMesh* mesh)
+{
+	return mesh ? mesh->getMaxSizeBoudingBox() : BoundingBox();
+}
+
 abcrAPI void getCameraSample(Camera* camera, Matrix4x4* v, CameraParam* p)
 {
 	if (camera) camera->get(v, p);

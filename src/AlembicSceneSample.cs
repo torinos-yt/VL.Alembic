@@ -172,6 +172,19 @@ namespace Alembic
             }
         }
 
+        public void GetMeshMaxProperties(string name, out int vertexCount, out BoundingBox boudingBox)
+        {
+            AlembicGeom geom = GetGeom(name);
+
+            vertexCount = default;
+            boudingBox = default;
+
+            if(geom.Type != GeomType.PolyMesh) return;
+
+            vertexCount = NativeMethods.getPolyMeshMaxVertexCount(geom.Self);
+            boudingBox = NativeMethods.getPolyMeshMaxSizeBoudingBox(geom.Self);
+        }
+
         public bool GetCamera(string name, out Matrix view, out CameraParam proj)
         {
             view = default;

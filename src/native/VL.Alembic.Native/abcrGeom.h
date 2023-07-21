@@ -250,7 +250,7 @@ public:
     BoundingBox getBounds();
 
     int getMaxVertexCount();
-
+    BoundingBox getMaxSizeBoudingBox();
 
 private:
 
@@ -285,6 +285,7 @@ private:
     int _capacity;
 
     int _maxVertexCount = -1;
+    Imath::Box3d _maxBounds = Imath::Box3d();
 
     AbcGeom::MeshTopologyVariance _topologyVariance;
 };

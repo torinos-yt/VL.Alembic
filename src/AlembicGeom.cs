@@ -119,6 +119,8 @@ namespace Alembic
 
         public BoundingBox BoundingBox => NativeMethods.getPolyMeshBoundingBox(this.self);
 
+        public MeshTopologyVariance Topology => NativeMethods.getPolyMeshTopologyVariance(this.self);
+
         public static explicit operator PolyMesh(AlembicGeom geom) => new PolyMesh(geom);
     }
 
