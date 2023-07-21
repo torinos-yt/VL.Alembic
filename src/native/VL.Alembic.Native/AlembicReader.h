@@ -42,6 +42,8 @@ abcrAPI VertexLayout getPolyMeshLayout(PolyMesh* mesh);
 
 abcrAPI float* getPolyMeshSample(PolyMesh* mesh, int* size);
 
+abcrAPI BoundingBox getPolyMeshBoundingBox(PolyMesh* mesh);
+
 abcrAPI int getPolyMeshMaxVertexCount(PolyMesh* mesh);
 
 abcrAPI void getCameraSample(Camera* camera, Matrix4x4* v, CameraParam* p);

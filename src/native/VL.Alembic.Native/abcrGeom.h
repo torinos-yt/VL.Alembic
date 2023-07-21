@@ -247,6 +247,8 @@ public:
 
     float* get(int* size);
 
+    BoundingBox getBounds();
+
     int getMaxVertexCount();
 
 

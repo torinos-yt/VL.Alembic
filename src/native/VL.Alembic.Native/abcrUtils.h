@@ -88,6 +88,11 @@ inline Matrix4x4 toVVVV(const Imath::M44f& m)
     return result;
 }
 
+inline BoundingBox toVVVV(const Imath::Box3d& b)
+{
+    return BoundingBox(toVVVV(b.min), toVVVV(b.max));
+}
+
 inline void copyTo(float*& dst, const V2f& v)
 {
     *dst++ = v.x;

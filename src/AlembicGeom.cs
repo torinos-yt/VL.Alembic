@@ -117,6 +117,8 @@ namespace Alembic
             return new DataPointer(ptr, size);
         }
 
+        public BoundingBox BoundingBox => NativeMethods.getPolyMeshBoundingBox(this.self);
+
         public static explicit operator PolyMesh(AlembicGeom geom) => new PolyMesh(geom);
     }
 

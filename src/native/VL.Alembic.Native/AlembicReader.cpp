@@ -96,6 +96,11 @@ abcrAPI float* getPolyMeshSample(PolyMesh* mesh, int* size)
 	return mesh ? mesh->get(size) : nullptr;
 }
 
+abcrAPI BoundingBox getPolyMeshBoundingBox(PolyMesh* mesh)
+{
+	return mesh ? mesh->getBounds() : BoundingBox();
+}
+
 abcrAPI int getPolyMeshMaxVertexCount(PolyMesh* mesh)
 {
 	return mesh ? mesh->getMaxVertexCount() : -1;

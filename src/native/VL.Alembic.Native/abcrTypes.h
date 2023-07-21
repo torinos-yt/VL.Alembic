@@ -161,6 +161,16 @@ struct Matrix4x4
 	}
 };
 
+struct BoundingBox
+{
+	Vector3 minimum;
+	Vector3 maximum;
+
+	BoundingBox() { minimum = maximum = Vector3(); };
+	BoundingBox(const Vector3& min, const Vector3& max)
+		: minimum(min), maximum(max) {};
+};
+
 struct CameraParam
 {
 	float Aperture;

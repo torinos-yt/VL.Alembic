@@ -1075,6 +1075,20 @@ float* PolyMesh::get(int* size)
     return _geom;
 }
 
+BoundingBox PolyMesh::getBounds()
+{
+    auto box = _meshSample.getSelfBounds();
+
+    if (_isInterpolate)
+    {
+        auto box2 = _meshSample2.getSelfBounds();
+        box.min += (box.min - box2.min) * _t;
+        box.max += (box.max - box2.max) * _t;
+    }
+
+    return toVVVV(box);
+}
+
 int PolyMesh::getMaxVertexCount()
 {
     if (_maxVertexCount != -1) return _maxVertexCount;

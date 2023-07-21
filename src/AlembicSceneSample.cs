@@ -114,17 +114,19 @@ namespace Alembic
             }
         }
 
-        public bool GetMesh(string name, out DataPointer ptr, out VertexDeclaration layout, out Matrix transform)
+        public bool GetMesh(string name, out DataPointer ptr, out VertexDeclaration layout, out BoundingBox bound, out Matrix transform)
         {
             ptr = default;
             transform= default;
             layout = default;
+            bound = default;
             AlembicGeom geom = GetGeom(name);
 
             if(geom.Self != IntPtr.Zero && geom.Type == GeomType.PolyMesh)
             {
                 ptr = ((PolyMesh)geom).GetSample();
                 layout = ((PolyMesh)geom).Layout;
+                bound = ((PolyMesh)geom).BoundingBox;
                 transform = geom.Transform;
 
                 return true;
@@ -133,20 +135,22 @@ namespace Alembic
             return false;
         }
 
-        public void GetMeshes(out IEnumerable<DataPointer> pointers, out IEnumerable<VertexDeclaration> layouts, out IEnumerable<Matrix> transforms)
+        public void GetMeshes(out IEnumerable<DataPointer> pointers, out IEnumerable<VertexDeclaration> layouts, out IEnumerable<BoundingBox> bounds, out IEnumerable<Matrix> transforms)
         {
             var ptrs = new List<DataPointer>();
             var los = new List<VertexDeclaration>();
+            var bds = new List<BoundingBox>();
             var mats = new List<Matrix>();
 
             bool exist = false;
 
             foreach(var n in this.Names)
             {
-                if(this.GetMesh(n, out var p, out var l, out var t))
+                if(this.GetMesh(n, out var p, out var l, out var b, out var t))
                 {
                     ptrs.Add(p);
                     los.Add(l);
+                    bds.Add(b);
                     mats.Add(t);
                     exist = true;
                 }
@@ -156,12 +160,14 @@ namespace Alembic
             {
                 pointers = ptrs as IEnumerable<DataPointer>;
                 layouts = los as IEnumerable<VertexDeclaration>;
+                bounds = bds as IEnumerable<BoundingBox>;
                 transforms = mats as IEnumerable<Matrix>;
             }
             else
             {
                 pointers = null;
                 layouts = null;
+                bounds = null;
                 transforms = null;
             }
         }
