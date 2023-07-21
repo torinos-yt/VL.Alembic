@@ -88,10 +88,20 @@ void abcrGeom::getInterpolateSampleSelector(chrono_t time, ISampleSelector& ss0,
     ss0 = ISampleSelector(time, prevTime < time ? ISampleSelector::kFloorIndex : ISampleSelector::kCeilIndex);
     ss1 = ISampleSelector(time, prevTime < time ? ISampleSelector::kCeilIndex : ISampleSelector::kFloorIndex);
 
-    auto time0 = _samplingPtr->getSampleTime(ss0.getIndex(_samplingPtr, _numSamples));
-    auto time1 = _samplingPtr->getSampleTime(ss1.getIndex(_samplingPtr, _numSamples));
+    auto index0 = ss0.getIndex(_samplingPtr, _numSamples);
+    auto index1 = ss1.getIndex(_samplingPtr, _numSamples);
 
-    t = (time - time0) / (time1 - time0);
+    if (index0 == index1)
+    {
+        t = 0;
+    }
+    else
+    {
+        auto time0 = _samplingPtr->getSampleTime(index0);
+        auto time1 = _samplingPtr->getSampleTime(index1);
+
+        t = (time - time0) / (time1 - time0);
+    }
 }
 
 
