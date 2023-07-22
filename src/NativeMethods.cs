@@ -6,8 +6,6 @@ using Stride.Graphics;
 
 namespace Alembic
 {
-    internal delegate void DebugLogDelegate(string str);
-
     [SuppressUnmanagedCodeSecurity]
     internal static class NativeMethods
     {
@@ -107,8 +105,5 @@ namespace Alembic
         public static extern void getCameraSample(IntPtr self, out Matrix v, out CameraParam p);
 
         #endregion // Camera
-
-        [DllImport("VL.Alembic.Native.dll")]
-        public static extern void RegisterDebugFunc(DebugLogDelegate fp);
     }
 }

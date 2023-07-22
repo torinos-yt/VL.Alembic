@@ -11,11 +11,6 @@ namespace Alembic
 
         static void debugLogFunc(string str) => Console.WriteLine(str);
 
-        static AlembicScene()
-        {
-            NativeMethods.RegisterDebugFunc(debugLogFunc);
-        }
-
         protected override bool ReleaseHandle()
         {
             NativeMethods.closeScene(handle);
