@@ -25,7 +25,7 @@ bld/
 *_i.h
 *.ilk
 *.meta
-*.obj
+src/*.obj
 *.pch
 *.pdb
 *.pgc
@@ -74,3 +74,5 @@ VL.Core*.dll
 
 # VVVV
 .vl/
+
+# !/help/asset/vat_boxanim/Geometry.obj
