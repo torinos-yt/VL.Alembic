@@ -71,7 +71,7 @@ namespace Alembic
         Unknown
     }
 
-    internal enum MeshTopologyVariance
+    public enum MeshTopologyVariance
     {
         kConstantTopology = 0,
         kHomogeneousTopology = 1,

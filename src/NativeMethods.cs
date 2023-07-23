@@ -95,6 +95,9 @@ namespace Alembic
         public static extern int getPolyMeshMaxVertexCount(IntPtr self);
 
         [DllImport("VL.Alembic.Native.dll")]
+        public static extern float getPolyMeshMaxVertexTime(IntPtr self);
+
+        [DllImport("VL.Alembic.Native.dll")]
         public static extern BoundingBox getPolyMeshMaxSizeBoudingBox(IntPtr self);
 
         #endregion // PolyMesh

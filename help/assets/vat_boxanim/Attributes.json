@@ -1,0 +1,15 @@
+{
+  "?xml": {
+    "@version": "1.0",
+    "@encoding": "UTF-8",
+    "@standalone": "yes"
+  },
+  "!DOCTYPE": {
+    "@name": "ROOT"
+  },
+  "VATAttributes": {
+    "Fps": "30",
+    "FrameCount": "119",
+    "EndTime": "3.9666667"
+  }
+}

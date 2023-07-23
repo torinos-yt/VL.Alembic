@@ -172,17 +172,29 @@ namespace Alembic
             }
         }
 
-        public void GetMeshMaxProperties(string name, out int vertexCount, out BoundingBox boudingBox)
+        public void GetMeshMaxProperties(string name, out int vertexCount, out float time, out BoundingBox boudingBox)
         {
             AlembicGeom geom = GetGeom(name);
 
             vertexCount = default;
+            time = default;
             boudingBox = default;
 
             if(geom.Type != GeomType.PolyMesh) return;
 
             vertexCount = NativeMethods.getPolyMeshMaxVertexCount(geom.Self);
+            time = NativeMethods.getPolyMeshMaxVertexTime(geom.Self);
             boudingBox = NativeMethods.getPolyMeshMaxSizeBoudingBox(geom.Self);
+        }
+
+        public MeshTopologyVariance GetMeshTopology(string name)
+        {
+            AlembicGeom geom = GetGeom(name);
+
+            if(geom.Type == GeomType.PolyMesh)
+                return ((PolyMesh)geom).Topology;
+            else
+                return MeshTopologyVariance.UnKnown;
         }
 
         public bool GetCamera(string name, out Matrix view, out CameraParam proj)

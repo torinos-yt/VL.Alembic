@@ -1,0 +1,46 @@
+shader VertexAnimationBaker_Internal_ComputeFX : ComputeShaderBase
+{
+    cbuffer PerObject
+    {
+        float4x4 world;
+        float4x4 worldInverse;
+
+        int FrameCount;
+        int PixelCount;
+        int VertexCount;
+
+        int Frame;
+
+        int2 TextureSize;
+    };
+
+    rgroup PerDispatch
+    {
+        StructuredBuffer<float3> Positions;
+        StructuredBuffer<float3> Normals;
+        StructuredBuffer<float2> Uvs;
+
+        RWTexture2D<float4> PositionTexture;
+        RWTexture2D<float4> NormalTexture;
+    };
+
+    override void Compute()
+    {
+        uint dtid = streams.DispatchThreadId.x;
+        if(dtid * FrameCount >= PixelCount || Frame >= FrameCount) return;
+
+        uint vid = dtid + 2 - (dtid % 3) * 2;
+
+        float3 pos  = mul(float4(Positions[vid], 1), world).xyz;
+        float3 norm = mul((float3x3)worldInverse, Normals[vid]);
+        float2 uv   = Uvs[vid];
+
+        if(dtid >= VertexCount) pos = 0;
+
+        uint uvx = dtid % TextureSize.x;
+        uint uvy = dtid / TextureSize.x * FrameCount + Frame;
+
+        PositionTexture[uint2(uvx, uvy)] = float4(pos, uv.x);
+        NormalTexture[uint2(uvx, uvy)] = float4(norm, uv.y);
+    }
+};

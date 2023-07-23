@@ -251,6 +251,7 @@ public:
 
     int getMaxVertexCount();
     BoundingBox getMaxSizeBoudingBox();
+    inline float getMaxVertexTime() const { return _maxVertexTime; }
 
 private:
 
@@ -288,6 +289,8 @@ private:
     Imath::Box3d _maxBounds = Imath::Box3d();
 
     AbcGeom::MeshTopologyVariance _topologyVariance;
+
+    chrono_t _maxVertexTime = 0;
 };
 
 class Camera : public abcrGeom

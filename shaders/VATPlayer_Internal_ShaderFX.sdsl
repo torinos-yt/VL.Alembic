@@ -1,0 +1,94 @@
+shader VATPlayer_Internal_ShaderFX : MaterialExtension, TransformationInstancing
+{
+    compose ComputeFloat time;
+
+    cbuffer PerMaterial
+    {
+        int Fps = 30;
+        int FrameCount;
+        float FrameSize;
+
+        int2 TextureSize;
+        float2 TexelSize;
+
+        int NumLines;
+        float LineSize;
+
+        float EndTime;
+
+        int InterpolationFrame;
+    }
+
+    rgroup PerMaterial
+    {
+        Texture2D<float4> PositionTexture;
+        Texture2D<float4> NormalTexture;
+    }
+
+    stage stream uint vid : SV_VertexID;
+
+    stage SamplerState LinearClampSampler
+    {
+        Filter = MIN_MAG_MIP_LINEAR;
+        AddressU = Clamp;
+        AddressV = Clamp;
+    };
+
+    override stage void GenerateNormal_VS()
+    {
+        // do nothing
+    }
+
+    struct VATAttributes
+    {
+        float3 pos;
+        float3 norm;
+        float2 uv;
+    };
+
+    VATAttributes ReadVertexAnimation(uint vid, float frame, uint frameCount)
+    {
+        VATAttributes o = (VATAttributes)0;
+
+        float uvx = vid % TextureSize.x * TexelSize.x + TexelSize.x * .5;
+        float uvy = (floor(vid * TexelSize.x) + frame * FrameSize) * LineSize + TexelSize.y * .5;
+
+        float4 posTex = PositionTexture.SampleLevel(LinearClampSampler, float2(uvx, uvy), 0);
+        float4 normTex = NormalTexture.SampleLevel(LinearClampSampler, float2(uvx, uvy), 0);
+
+        o.pos = posTex.xyz;
+        o.norm = normTex.xyz;
+        o.uv = float2(posTex.w, normTex.w);
+
+        return o;
+    }
+
+    float mod(float x, float y)
+    {
+        return x - y * floor(x / y);
+    }
+
+    stage override void TransformPosition()
+    {
+        base.TransformPosition();
+
+        float frame = mod(time.Compute(), EndTime) * Fps;
+        frame = min(frame, floor(EndTime) * Fps);
+
+        if(!InterpolationFrame) frame = round(frame);
+
+        VATAttributes v = ReadVertexAnimation(streams.vid, frame, FrameCount);
+
+        float4x4 w = GetInstanceWorld(streams.InstanceID);
+        float4x4 wi = GetInstanceWorldInverse(streams.InstanceID);
+
+        bool isInstancing = w._m33 == 1;
+
+        streams.PositionWS = mul(float4(v.pos, 1), World);
+        if(isInstancing) streams.PositionWS = mul(streams.PositionWS, w);
+        streams.ShadingPosition = mul(streams.PositionWS, ViewProjection);
+
+        streams.normalWS = mul(v.norm, (float3x3)WorldInverseTranspose);
+        if(isInstancing) streams.normalWS = mul((float3x3)wi, streams.normalWS);
+    }
+};

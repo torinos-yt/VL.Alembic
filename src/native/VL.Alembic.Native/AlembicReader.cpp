@@ -106,6 +106,11 @@ abcrAPI int getPolyMeshMaxVertexCount(PolyMesh* mesh)
 	return mesh ? mesh->getMaxVertexCount() : -1;
 }
 
+abcrAPI float getPolyMeshMaxVertexTime(PolyMesh* mesh)
+{
+	return mesh ? mesh->getMaxVertexTime() : -1;
+}
+
 abcrAPI BoundingBox getPolyMeshMaxSizeBoudingBox(PolyMesh* mesh)
 {
 	return mesh ? mesh->getMaxSizeBoudingBox() : BoundingBox();

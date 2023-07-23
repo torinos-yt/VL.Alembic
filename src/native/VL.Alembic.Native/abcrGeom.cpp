@@ -1126,6 +1126,9 @@ int PolyMesh::getMaxVertexCount()
         }
 
         _maxVertexCount = max(_maxVertexCount, vertexCount);
+
+        if (_maxVertexCount == vertexCount)
+            _maxVertexTime = _samplingPtr->getSampleTime(i);
     }
 
     return _maxVertexCount;
